@@ -7,10 +7,13 @@ description: >-
   the current machine, global-first. Use WHENEVER the user says "set up my toolkit", "install
   do-me", "sync my skills", "update the toolkit", or is onboarding a fresh machine or repairing a
   drifted setup. ALSO trigger when the user clones the do-me bundle repo and asks to apply it.
-  Operates INDEPENDENTLY: it locates the bundle, diffs it against the installed state, installs
-  non-destructively, and verifies without being told each step. Invoke with /set-me. Installation
-  only — authoring or changing skill content is manual work (or skill-creator); committing bundle
-  changes belongs to commit-me; development concerns route through do-me.
+  ALSO trigger when the user asks to "clean up my setup", "remove duplicate skills", or when
+  skills appear twice in the session's skill list (the double-load symptom of project-level
+  copies). Operates INDEPENDENTLY: it locates the bundle, diffs it against the installed state,
+  removes duplicates, installs non-destructively, and verifies without being told each step.
+  Invoke with /set-me. Installation and setup hygiene only — authoring or changing skill content
+  is manual work (or skill-creator); committing bundle changes belongs to commit-me; development
+  concerns route through do-me.
 ---
 
 # set-me
@@ -39,10 +42,13 @@ do-me/                       ← the cloned bundle repo (this skill lives in it)
 
 - **Verify only** ("is my setup current?"): diff the bundle against `~/.claude`, report drift,
   change nothing. No ceremony.
-- **Sync** (toolkit already installed, bundle is newer): copy only what differs, re-merge settings
-  only if the fragment changed, report the delta. Do not re-write identical files — a sync that
-  touches nothing should say so.
-- **Fresh install** (new machine): the full process below, including the config merges.
+- **Cleanup / dedup** ("clean up my setup", duplicate skills showing): run the dedup sweep below,
+  change nothing else.
+- **Sync** (toolkit already installed, bundle is newer): the dedup sweep, then copy only what
+  differs, re-merge settings only if the fragment changed, report the delta. Do not re-write
+  identical files — a sync that touches nothing should say so.
+- **Fresh install** (new machine): the full process below, including the dedup sweep and the
+  config merges.
 
 **Anti-destruction rules (these bind every mode):**
 
@@ -56,6 +62,28 @@ do-me/                       ← the cloned bundle repo (this skill lives in it)
   copied to `~/.claude/.set-me-backup/<timestamp>/` first. Cheap insurance; mention it once in the
   report.
 
+## Cleanup & dedup — the global-first sweep
+
+Duplicates are the toolkit's chronic disease: a skill copied into a project's `.claude/` loads
+TWICE (it shows up doubled in the session skill list), drifts silently from the global copy, and
+routing degrades. The sweep finds and removes them, with these rules:
+
+1. **Project-level copies of managed items are duplicates by definition.** If the current
+   project's `.claude/skills|agents|commands` contains an item the toolkit manages, it goes —
+   the global copy is the only copy. **How it goes matters:** hash-identical to global → remove
+   directly (backed up). Content differs → that's drift, not just a duplicate: diff both, tell
+   the user which side is newer, and reconcile (usually newest content moves INTO global, then
+   the project copy goes). Git-tracked project files are removed with `git rm` (recoverable,
+   reviewable) and left staged — committing is `commit-me`'s hand-off.
+2. **Stray nested duplicates inside `~/.claude`** (a `references/references/`, a `SKILL.md.bak`,
+   a copied folder ending in " - Copy") → backup, remove.
+3. **Never sweep what you can't prove.** A project `.claude` item the toolkit does NOT manage
+   (project-specific settings.local.json, launch.json, a genuinely project-local skill) is not a
+   duplicate — leave it, list it as project-specific.
+4. **Doubled skill-list symptom check.** After the sweep, if the same skill name would still load
+   from two places, say so explicitly and name both paths — never report "clean" past a known
+   double-load.
+
 ## The process
 
 1. **Locate the bundle.** You are running from it (this SKILL.md's own directory tree), or the
@@ -64,39 +92,48 @@ do-me/                       ← the cloned bundle repo (this skill lives in it)
 2. **Inventory the diff.** For every bundle file compute target path under `~/.claude` and compare
    content (hash or text): `new` / `changed` / `identical`. Also list `local-only` items under the
    managed folders (skills/agents/commands/hooks) that the bundle doesn't carry.
-3. **Install files.** Copy `new` and `changed` (after backup) — skills to `~/.claude/skills/`,
+3. **Run the cleanup & dedup sweep** (rules above) — project duplicates out, stray nested copies
+   out, drift reconciled global-first.
+4. **Install files.** Copy `new` and `changed` (after backup) — skills to `~/.claude/skills/`,
    agents to `~/.claude/agents/`, commands to `~/.claude/commands/`, hooks to `~/.claude/hooks/`,
    `subagent-driven-default.json` to `~/.claude/`. Preserve UTF-8 without BOM.
-4. **Merge config.** `CLAUDE.md` per the rule above. `settings.json`: ensure the SessionStart hook
+5. **Merge config.** `CLAUDE.md` per the rule above. `settings.json`: ensure the SessionStart hook
    (cat subagent-driven-default.json), the PreToolUse guard (bash guard-secrets.sh), and each
    `permissions.allow` entry from the fragment exist — add what's missing, keep everything else,
    validate JSON.
-5. **Verify.** List the installed skills and agents (count must cover the bundle), confirm
+6. **Verify.** List the installed skills and agents (count must cover the bundle), confirm
    `settings.json` parses, confirm `DISPATCH.md` exists at
    `~/.claude/skills/do-me/references/DISPATCH.md` (it is the registry the family depends on —
-   an install without it is broken).
-6. **Report** per the output contract. If anything was skipped or needs a restart (a fresh session
-   picks up new skills), say so plainly.
+   an install without it is broken), and confirm no managed item resolves from two places.
+7. **Report** per the output contract. If anything was skipped or needs a restart (a fresh session
+   picks up new skills and drops removed duplicates), say so plainly.
 
 ## Required output contract
 
 ### 1. Mode & source
 Verify / sync / fresh install, and where the bundle came from (path or clone).
 
-### 2. Installed / updated / skipped
+### 2. Cleanup & dedup results
+What was removed (and how: `git rm` vs backup+delete), what drift was found and how it was
+reconciled, what was left alone as project-specific. "Nothing to clean" is a valid, stated result.
+
+### 3. Installed / updated / skipped
 A table: item · action (new / updated / identical / local-only kept) — every bundle file accounted
 for. Backup location if anything was overwritten.
 
-### 3. Config merge results
+### 4. Config merge results
 What was added to settings.json (and that it still parses), what happened with CLAUDE.md.
 
-### 4. Verification
-Skill count, agent count, DISPATCH.md present, settings valid — with the actual check output, not
-assertions. Note that new skills register on the next session start.
+### 5. Verification
+Skill count, agent count, DISPATCH.md present, settings valid, no double-loads — with the actual
+check output, not assertions. Note that new skills register on the next session start.
 
 ## Definition of done — self-check before responding
 
 - [ ] Installed into `~/.claude` (global) — nothing written into a project `.claude/`.
+- [ ] Dedup sweep ran: no managed item loads from two places; drift reconciled global-first, not
+      guessed; git-tracked removals staged via `git rm`, never committed here.
+- [ ] Only provable duplicates were removed — project-specific items left alone and listed.
 - [ ] Nothing local-only was deleted; anything overwritten was backed up first.
 - [ ] `settings.json` merged additively and validated as parseable JSON.
 - [ ] `CLAUDE.md` never replaced without showing the diff and getting a yes.
