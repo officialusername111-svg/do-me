@@ -11,6 +11,9 @@ user → do-me (routes) → skill (process, gates, user contact) → agent (craf
 ```
 
 - **Never skip down**: do-me and loop-me never dispatch agents directly; they route to skills.
+  **Sole exception — logical-hunter**: both dispatch it at run close-out for the post-run logic
+  hunt. It does no domain work and never patches, so the rule this bullet protects (domain work
+  flows through skills) stays intact.
 - **Never skip up**: agents never invoke skills and never contact the user.
 - **Never sideways mid-run**: a skill finishes its cycle and recommends; it does not re-route.
 - The user may invoke any domain skill directly when the domain is obvious — that is the user doing
@@ -28,7 +31,8 @@ user → do-me (routes) → skill (process, gates, user contact) → agent (craf
 | ship-me | devops-release-engineer (deploy mechanics) · database-architect (migration/schema-change *design* consult) · technical-writer (release-notes drafting, in-release) | release scope, target env, the runbook step being executed; for notes: version + what shipped | step output with real command results; drafted notes for ship-me to review/own |
 | document-me | technical-writer | human-approved outline (Medium/Large), audience per artifact, the code surfaces to verify against | the artifacts + verification notes |
 | commit-me | — (no bench; works the tree directly) | — | — |
-| loop-me | — (no bench; allocates queue slots to *skills*, never to agents) | — | — |
+| do-me | logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement proposals shaped as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached |
+| loop-me | logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); accepted findings become the follow-up queue |
 
 **Standard report** (every dispatched agent returns): status (done / in-progress / blocked) ·
 changes with one-line purposes · evidence (real output, not claims) · traceability to criteria ·
@@ -44,6 +48,10 @@ assumptions taken + open questions for the skill to escalate · out-of-scope pro
 4. **Craft, not process**: agents never route work, pick tiers, run user-facing gates, or own plan
    files (PLAN.md / AUDIT.md / LOOP-STATE.md / RUNBOOK.md belong to the dispatching skill).
    team-leader returns gate-verdict *recommendations*; the skill rules on them.
+5. **logical-hunter is post-run and proposal-only**: dispatched by do-me / loop-me at close-out,
+   read-only toward implementation. Its findings are **unauthorized work** until the human accepts
+   them at the dispatching skill's close-out; genuine defects it uncovers are flagged for fix-me,
+   never developed dressed as "improvements".
 
 ## Settled ownership boundaries
 
@@ -59,3 +67,7 @@ assumptions taken + open questions for the skill to escalate · out-of-scope pro
   neither supplies it.
 - **Schema/migration design**: build-me's cycle (SA contract + database-architect design);
   ship-me only generates and applies scripts from migrations that already exist.
+- **Improvement findings**: logical-hunter detects and proposes; the dispatching skill (do-me /
+  loop-me) presents accept/decline to the human; development of an accepted finding belongs to the
+  routed skill (build-me / design-me / do-me for mixed) — never to the hunter, and never without
+  the human's accept.

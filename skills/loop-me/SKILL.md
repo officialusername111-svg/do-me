@@ -113,6 +113,26 @@ the table was drawn. Gauge the batch before building anything:
      detail and surface it to the human in the report. Inner cycle caps live *inside* one loop
      attempt; they never stack with the outer counter into human-free marathon runs.
 
+## The logic hunt — after the queue, before the report
+
+Once **every** queue row is terminal (`passed` / `unresolved` / `dropped`), dispatch the
+**logical-hunter** agent (per DISPATCH.md — the sole agent this skill dispatches directly) with the
+batch scope: the terminal queue with its concern statements, the surfaces the batch touched, any
+criteria/spec pointers, and how to run the app. It sweeps the batch's **blast radius** for logical
+gaps nobody scoped — interaction asymmetries, incomplete state machines, implied-but-missing
+consequences, cross-task incoherence (the gap only a *batch* can create) — and returns ranked,
+evidence-backed improvement proposals shaped as routable concerns.
+
+- **Every loop-me run gets a hunt** — even a trivial two-item batch, scoped to what those items
+  touched. The hunt is one dispatch, not a cycle; it doesn't change the batch's tier.
+- **The hunt never reopens the accounting.** The queue's arithmetic is already settled; findings
+  are *new* work, not retroactive failures against finished tasks.
+- **Findings are proposals.** Present them in report section 5 for the human's accept/decline —
+  nothing is developed without the accept. Accepted improvements become a **follow-up queue**
+  (routed per the normal allocation rules); declined ones are recorded with a one-line note.
+  Defects the hunter flags route to `fix-me` as new defect concerns — never dressed as
+  improvements.
+
 ## Loop semantics — non-negotiable
 
 - **Three attempts, then unresolved.** An attempt is one full allocate → develop → verify cycle,
@@ -189,6 +209,13 @@ run, not an admission of defeat.
 The location of `LOOP-STATE.md` if one was used, and its final status — every row terminal, no
 `queued` or `active` remnants.
 
+### 5. Improvement findings (the logic hunt)
+logical-hunter's ranked findings, each as a routable concern: id (LH1…), the gap, evidence,
+proposed behavior, suggested route + tier. Ask the human to accept/decline per finding; accepted
+ones become the follow-up queue, declined ones are recorded with a note, flagged defects route to
+`fix-me`. If the hunt returned nothing, say so — an empty section is reported, never skipped
+silently.
+
 ## Definition of done — self-check before responding
 
 - [ ] **Right-sized**: no queue machinery for 1–2 concerns; no state file for a single-session
@@ -209,7 +236,9 @@ The location of `LOOP-STATE.md` if one was used, and its final status — every 
 - [ ] Routed skills' own approval gates honored; nothing auto-committed, pushed, or deployed.
 - [ ] Queue accounting balances: every task that entered appears as `passed`, `unresolved`, or
       `dropped`.
-- [ ] Batch report has all four sections; the unresolved section follows the required shape.
+- [ ] Batch report has all five sections; the unresolved section follows the required shape.
+- [ ] Logic hunt dispatched after the queue went terminal — every run, every tier; findings
+      presented for accept/decline, none silently developed, none silently dropped.
 
 ## Pairs well with
 
@@ -220,6 +249,9 @@ The location of `LOOP-STATE.md` if one was used, and its final status — every 
   those fix cycles spend the owning concern's attempt counter.
 - `do-me` — coordinates the genuinely mixed FE+BE concerns (contract-first) inside a queue slot.
 - `test-me` — the pass gate: its pass/fail matrix is the evidence the Pass? decision runs on.
+- `logical-hunter` (agent) — the post-queue logic hunt: sweeps the batch's blast radius for
+  unscoped logical gaps and returns improvement proposals; the sole agent this skill dispatches
+  directly (per DISPATCH.md).
 - `commit-me` — the explicit close-out for a finished batch; loop-me stages, commit-me commits.
 - `superpowers:subagent-driven-development` (if installed) — run each attempt in a fresh subagent
   with `LOOP-STATE.md` as the handoff artifact, so no attempt inherits a stale mental model.
