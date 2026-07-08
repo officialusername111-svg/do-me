@@ -151,10 +151,16 @@ wrong for the user.
 - **Runs on every do-me run that built, fixed, or redesigned behavior** — Trivial included, scoped
   tightly to what the trivial change touched. Skip it only for pure lifecycle pass-throughs where
   no behavior changed (`commit-me`, `document-me`, `test-me`, `secure-me` routing).
-- **Findings are proposals, not authorized work.** Append them to the outcome report as ranked
-  improvement proposals for the human's accept/decline. Accepted ones route as *new* concerns —
-  `build-me` / `design-me` per domain, `loop-me` if several accumulate; defects the hunter flags
-  go to `fix-me`. Nothing is developed without the accept.
+- **The hunt is active — findings are developed, not parked.** Route each finding straight into
+  development as a *new* concern — `build-me` / `design-me` per domain, `loop-me` if several
+  accumulate; defects the hunter flags go to `fix-me`. The routed skills' own tier gates stay
+  intact (a Medium+ finding still stops for its own plan approval).
+- **Report the hunt as an artifact.** Once the findings reach a terminal state, load the
+  `artifact-design` skill and publish the hunt report as an artifact containing **only what the
+  logical-hunter found** — per finding: LH-id, the gap, evidence, and its outcome (developed with
+  an evidence pointer / blocked / routed to fix-me). Link it from the outcome report; nothing
+  else from the run goes in it, and an empty hunt gets a one-line in-thread note instead of an
+  artifact.
 - The hunt is one dispatch, not a cycle — it never inflates the run's tier and never reopens the
   delivered work's verdict.
 
@@ -178,8 +184,9 @@ wrong for the user.
 - [ ] Both-case only: contract frozen *before* parallel work; integrated; verified end to end; `blocked`
       items escalated, not spun on past 3 cycles.
 - [ ] Human checkpoints honoured for Medium/Large; nothing auto-committed.
-- [ ] Logic hunt dispatched at close-out on every run that changed behavior; findings presented
-      for accept/decline — none silently developed, none silently dropped.
+- [ ] Logic hunt dispatched at close-out on every run that changed behavior; every finding
+      developed to a terminal state (developed / blocked / fix-me-routed) and the findings-only
+      artifact report published — none silently dropped.
 - [ ] The result is reported back as one coherent outcome, not two disconnected halves.
 
 ## Scope guard

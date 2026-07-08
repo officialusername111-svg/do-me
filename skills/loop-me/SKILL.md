@@ -121,17 +121,18 @@ batch scope: the terminal queue with its concern statements, the surfaces the ba
 criteria/spec pointers, and how to run the app. It sweeps the batch's **blast radius** for logical
 gaps nobody scoped — interaction asymmetries, incomplete state machines, implied-but-missing
 consequences, cross-task incoherence (the gap only a *batch* can create) — and returns ranked,
-evidence-backed improvement proposals shaped as routable concerns.
+evidence-backed improvement findings shaped as routable concerns.
 
 - **Every loop-me run gets a hunt** — even a trivial two-item batch, scoped to what those items
   touched. The hunt is one dispatch, not a cycle; it doesn't change the batch's tier.
 - **The hunt never reopens the accounting.** The queue's arithmetic is already settled; findings
   are *new* work, not retroactive failures against finished tasks.
-- **Findings are proposals.** Present them in report section 5 for the human's accept/decline —
-  nothing is developed without the accept. Accepted improvements become a **follow-up queue**
-  (routed per the normal allocation rules); declined ones are recorded with a one-line note.
-  Defects the hunter flags route to `fix-me` as new defect concerns — never dressed as
-  improvements.
+- **The hunt is active — findings are developed, not parked.** Each improvement finding becomes a
+  **follow-up queue** item (LH-ids carried through) and is executed immediately under the normal
+  loop semantics: allocation per the standard rules, 3-attempt cap, evidence-gated pass, and the
+  routed skills' own tier gates intact. Defects the hunter flags route to `fix-me` as new defect
+  concerns — never dressed as improvements. The follow-up queue gets its own accounting, reported
+  in the hunt-report artifact (section 5), separate from the original batch's arithmetic.
 
 ## Loop semantics — non-negotiable
 
@@ -209,12 +210,14 @@ run, not an admission of defeat.
 The location of `LOOP-STATE.md` if one was used, and its final status — every row terminal, no
 `queued` or `active` remnants.
 
-### 5. Improvement findings (the logic hunt)
-logical-hunter's ranked findings, each as a routable concern: id (LH1…), the gap, evidence,
-proposed behavior, suggested route + tier. Ask the human to accept/decline per finding; accepted
-ones become the follow-up queue, declined ones are recorded with a note, flagged defects route to
-`fix-me`. If the hunt returned nothing, say so — an empty section is reported, never skipped
-silently.
+### 5. The hunt report (artifact)
+Render the logic-hunt outcome as an **artifact**: load the `artifact-design` skill first, then
+publish a page containing **only what the logical-hunter found** — per finding: LH-id, gap type,
+observed vs coherent behavior, evidence, and its outcome (`developed` with an evidence pointer /
+`unresolved` after 3 attempts / `routed to fix-me`), plus the follow-up queue's own accounting.
+Nothing else from the batch goes in it. The in-thread batch report links the artifact instead of
+re-listing the findings. If the hunt found nothing, say so in-thread — no artifact for an empty
+hunt.
 
 ## Definition of done — self-check before responding
 
@@ -237,8 +240,11 @@ silently.
 - [ ] Queue accounting balances: every task that entered appears as `passed`, `unresolved`, or
       `dropped`.
 - [ ] Batch report has all five sections; the unresolved section follows the required shape.
-- [ ] Logic hunt dispatched after the queue went terminal — every run, every tier; findings
-      presented for accept/decline, none silently developed, none silently dropped.
+- [ ] Logic hunt dispatched after the queue went terminal — every run, every tier; every finding
+      executed through the follow-up queue to a terminal state (developed / unresolved /
+      fix-me-routed), none silently dropped.
+- [ ] Hunt-report artifact published (findings only, `artifact-design` loaded first) and linked
+      from the batch report — or "hunt found nothing" stated in-thread.
 
 ## Pairs well with
 
@@ -250,8 +256,8 @@ silently.
 - `do-me` — coordinates the genuinely mixed FE+BE concerns (contract-first) inside a queue slot.
 - `test-me` — the pass gate: its pass/fail matrix is the evidence the Pass? decision runs on.
 - `logical-hunter` (agent) — the post-queue logic hunt: sweeps the batch's blast radius for
-  unscoped logical gaps and returns improvement proposals; the sole agent this skill dispatches
-  directly (per DISPATCH.md).
+  unscoped logical gaps; its findings become the auto-executed follow-up queue and the artifact
+  hunt report; the sole agent this skill dispatches directly (per DISPATCH.md).
 - `commit-me` — the explicit close-out for a finished batch; loop-me stages, commit-me commits.
 - `superpowers:subagent-driven-development` (if installed) — run each attempt in a fresh subagent
   with `LOOP-STATE.md` as the handoff artifact, so no attempt inherits a stale mental model.
