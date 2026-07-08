@@ -24,15 +24,15 @@ user → do-me (routes) → skill (process, gates, user contact) → agent (craf
 | Skill | Bench (may dispatch) | Dispatch packet (what the agent receives) | Return shape |
 |---|---|---|---|
 | build-me | team-leader · business-analyst · system-analyst · database-architect · backend-developer · backend-tester | scoped task, tier, acceptance criteria / requirement IDs, frozen contract if one exists, constraints (migrations allowed? tables in scope?) | standard report (below) |
-| design-me / redesign-me | ux-ui-designer · frontend-developer · frontend-tester | scoped task, approved direction or design spec, UI-only boundary, relevant states (loading/empty/error) | standard report |
+| design-me / redesign-me | ux-ui-designer · frontend-developer · frontend-tester · reference-enforcer (only when a reference image is attached) | scoped task, approved direction or design spec, UI-only boundary, relevant states (loading/empty/error); for the enforcer: reference image path(s), user strictness note, built surface + how to run the app, viewport hint, prior discrepancy list on cycle 2+ | standard report; enforcer returns PASS/FAIL/BLOCKED + ranked discrepancy list (RE-ids) + screenshot evidence |
 | fix-me | backend-developer *or* frontend-developer (the repair) · matching tester (blast-radius regression) | the completed diagnosis: root-cause sentence, evidence, failure findings, affected path | standard report |
 | test-me | backend-tester · frontend-tester | what changed (or named target), acceptance criteria, test strategy per layer | pass/fail matrix + findings, evidence attached |
 | secure-me | security-tester | scope (diff / surface / whole app), tier, prior findings to re-test | findings table: `# · Finding · OWASP/area · Blocker/High/Med/Low · Evidence (file:line) · Fix` |
 | ship-me | devops-release-engineer (deploy mechanics) · database-architect (migration/schema-change *design* consult) · technical-writer (release-notes drafting, in-release) | release scope, target env, the runbook step being executed; for notes: version + what shipped | step output with real command results; drafted notes for ship-me to review/own |
 | document-me | technical-writer | human-approved outline (Medium/Large), audience per artifact, the code surfaces to verify against | the artifacts + verification notes |
 | commit-me | — (no bench; works the tree directly) | — | — |
-| do-me | logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement proposals shaped as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached |
-| loop-me | logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); accepted findings become the follow-up queue |
+| do-me | logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement findings as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached; do-me develops them and publishes the findings-only artifact report |
+| loop-me | logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); findings become the follow-up queue, executed under normal loop semantics; loop-me publishes the findings-only artifact report |
 
 **Standard report** (every dispatched agent returns): status (done / in-progress / blocked) ·
 changes with one-line purposes · evidence (real output, not claims) · traceability to criteria ·
@@ -48,10 +48,20 @@ assumptions taken + open questions for the skill to escalate · out-of-scope pro
 4. **Craft, not process**: agents never route work, pick tiers, run user-facing gates, or own plan
    files (PLAN.md / AUDIT.md / LOOP-STATE.md / RUNBOOK.md belong to the dispatching skill).
    team-leader returns gate-verdict *recommendations*; the skill rules on them.
-5. **logical-hunter is post-run and proposal-only**: dispatched by do-me / loop-me at close-out,
-   read-only toward implementation. Its findings are **unauthorized work** until the human accepts
-   them at the dispatching skill's close-out; genuine defects it uncovers are flagged for fix-me,
-   never developed dressed as "improvements".
+5. **logical-hunter is post-run and active**: dispatched by do-me / loop-me at close-out,
+   read-only toward implementation itself. The dispatching skill routes its findings **straight
+   into development** — build-me / design-me per domain, do-me for mixed, defects to fix-me
+   (never developed dressed as "improvements") — with the routed skills' own tier gates intact.
+   The dispatching skill then publishes the hunt report as an **artifact** (load the
+   `artifact-design` skill first) containing **only the hunter's findings** and each one's
+   outcome; no artifact for an empty hunt.
+6. **reference-enforcer is a hard gate**: when a UI concern carries an attached reference image,
+   the concern is not done until the enforcer rules PASS — a FAIL goes back to the builder with
+   the discrepancy list and the enforcer is re-dispatched, **capped at 3 enforcer cycles**, then
+   the concern is `blocked` and escalated with the last list + screenshots. The enforcer is
+   read-only; a visual verdict requires screenshot evidence (markup-only verdicts are labeled as
+   such and never silently treated as visually verified). Strictness: inferred from the reference
+   type (sketch → structural only; hi-fi → + visual character), user note overrides.
 
 ## Settled ownership boundaries
 
@@ -67,7 +77,7 @@ assumptions taken + open questions for the skill to escalate · out-of-scope pro
   neither supplies it.
 - **Schema/migration design**: build-me's cycle (SA contract + database-architect design);
   ship-me only generates and applies scripts from migrations that already exist.
-- **Improvement findings**: logical-hunter detects and proposes; the dispatching skill (do-me /
-  loop-me) presents accept/decline to the human; development of an accepted finding belongs to the
-  routed skill (build-me / design-me / do-me for mixed) — never to the hunter, and never without
-  the human's accept.
+- **Improvement findings**: logical-hunter detects; the dispatching skill (do-me / loop-me)
+  routes each finding straight into development and owns the findings-only artifact hunt report;
+  the development itself belongs to the routed skill (build-me / design-me / do-me for mixed) —
+  never to the hunter.

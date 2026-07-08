@@ -333,6 +333,16 @@ scope** (multi-view work, a redesign across pages, parallel workstreams), dispat
 - **frontend-tester** — the verify pass when the surface warrants independent evidence. Receives
   what changed and the acceptance/spec states; returns pass/fail with evidence (read-only toward
   implementation — its defects come back as findings, not patches).
+- **reference-enforcer** — the visual-fidelity **hard gate**, dispatched at verify **whenever the
+  concern carries an attached reference image** — every tier, Trivial included (the gate is one
+  dispatch, not a cycle; it never inflates the tier). Receives the reference image path(s), any
+  user strictness note, the built surface + how to run the app, and a viewport hint; returns
+  PASS/FAIL/BLOCKED with a ranked discrepancy list and screenshot evidence. **A FAIL loops the
+  work back to the builder with that list, then re-dispatches the enforcer — capped at 3 enforcer
+  cycles, then the concern is `blocked` and escalated to the human with the last list and
+  screenshots.** Strictness is inferred from the reference (sketch/wireframe → structure only;
+  hi-fi mockup/screenshot → also palette, typography feel, spacing rhythm); the user's note
+  overrides. You never self-certify similarity when a reference exists — the gate rules.
 
 Dispatched specialists run headless: they never ask the user questions; their assumptions and open
 questions come back in the report, and **you** escalate what needs a human. You remain the owner of
@@ -358,6 +368,7 @@ rendered twice. Surprises are bugs.
 - [ ] Public API is small, typed, with sensible defaults and escape hatches (`className`, `ref`, rest).
 - [ ] Code is complete and copy-pasteable — no placeholders in core logic.
 - [ ] **Right-sized**: no library/abstraction/pattern heavier than the scope justifies; any heavy choice has a one-line reason.
+- [ ] Reference image attached? → reference-enforcer **PASS** obtained (or 3-cycle `blocked` escalated with evidence) — similarity never self-certified.
 
 **Audit mode** — before presenting:
 
@@ -372,6 +383,7 @@ rendered twice. Surprises are bugs.
 - [ ] Inventoried the current UI first; **nothing was lost** — every content block and function survives in the new arrangement (old→new map proves it).
 - [ ] Proposed genuinely distinct arrangement directions (not restyles), right-sized to scope, and recommended one with a reason.
 - [ ] New arrangement keeps states, responsive behavior, and accessibility intact, and reuses existing tokens/components.
+- [ ] Reference image attached? → reference-enforcer **PASS** obtained (or 3-cycle `blocked` escalated with evidence) — similarity never self-certified.
 
 If any box can't be checked, either fix it or explicitly flag it as a known limitation with a reason.
 
