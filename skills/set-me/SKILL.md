@@ -3,7 +3,7 @@ name: set-me
 description: >-
   Install, sync, or verify the do-me toolkit — the full -me skill family (do-me, build-me,
   design-me/redesign-me, fix-me, test-me, secure-me, commit-me, ship-me, document-me, loop-me,
-  tell-me), the 15 specialist agents, the DISPATCH.md registry, hooks, and global config — into ~/.claude on
+  tell-me), the 17 specialist agents, the DISPATCH.md registry, hooks, and global config — into ~/.claude on
   the current machine, global-first. Use WHENEVER the user says "set up my toolkit", "install
   do-me", "sync my skills", "update the toolkit", or is onboarding a fresh machine or repairing a
   drifted setup. ALSO trigger when the user clones the do-me bundle repo and asks to apply it.
@@ -30,7 +30,7 @@ project folders hold only genuinely project-specific settings.
 ```
 do-me/                       ← the cloned bundle repo (this skill lives in it)
   skills/<name>/SKILL.md     ← the -me family incl. this skill; do-me/references/DISPATCH.md
-  agents/*.md                ← 15 deep-specialist subagents (incl. plan-critic, logical-hunter, reference-enforcer)
+  agents/*.md                ← 17 deep-specialist subagents (incl. plan-critic, logical-hunter, reference-enforcer, security-skeptic, everyday-user)
   commands/redesign-me.md    ← the redesign-me command alias
   hooks/guard-secrets.sh     ← PreToolUse guard: blocks staging/committing .env
   config/CLAUDE.md           ← global working-preferences template
