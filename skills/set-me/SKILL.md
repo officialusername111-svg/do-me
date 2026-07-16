@@ -101,7 +101,8 @@ routing degrades. The sweep finds and removes them, with these rules:
    agents to `~/.claude/agents/`, commands to `~/.claude/commands/`, hooks to `~/.claude/hooks/`,
    `subagent-driven-default.json` to `~/.claude/`. Preserve UTF-8 without BOM.
 5. **Merge config.** `CLAUDE.md` per the rule above. `settings.json`: ensure the SessionStart hook
-   (cat subagent-driven-default.json), the PreToolUse guard (bash guard-secrets.sh), and each
+   (cat subagent-driven-default.json), the PreToolUse guard (bash guard-secrets.sh), the
+   UserPromptSubmit session-length watchdog (bash session-length-check.sh), and each
    `permissions.allow` **and `permissions.ask`** entry from the fragment exist — add what's missing
    to each array, keep everything else, validate JSON.
 6. **Verify.** List the installed skills and agents (count must cover the bundle), confirm

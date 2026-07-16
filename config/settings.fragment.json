@@ -22,6 +22,16 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/session-length-check.sh\""
+          }
+        ]
+      }
     ]
   },
   "permissions": {
