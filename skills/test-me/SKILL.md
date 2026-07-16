@@ -28,6 +28,30 @@ You direct two agents from `.claude/agents` when the layer calls for them:
 - **backend-tester** — unit and integration tests for services, controllers, and the data layer.
 - **frontend-tester** — E2E / UI checks for rendered pages and user flows.
 
+## Autonomous mode — test-me is the GREEN oracle
+
+In a fire-and-forget run (Autonomy Contract, `do-me/references/DISPATCH.md` §0), test-me is the
+**oracle the mechanical GREEN commit gate consults** — the toolkit auto-commits only on evidence you
+produce, so your honesty is load-bearing:
+
+- **Report execution, not presence.** State plainly whether the tests covering the changed behavior
+  **actually executed and passed** — not merely that they exist or compiled. "It built" is never
+  GREEN.
+- **Report test-integrity.** Record the test-surface facts the gate needs: the executed-test count,
+  and whether any **pre-existing test was skipped, deleted, or weakened** in this run (which would
+  demote the run to parked-for-human — developer agents are barred from touching existing tests).
+- **No harness → "cannot certify GREEN".** If the project has no test harness, say so as a
+  first-class result; the run then caps at stage-and-report and does **not** auto-commit. Never let
+  "compiled" stand in for "verified."
+- **Findings feed the run's one bounded wave, not a prompt.** Route each finding to its named owner
+  as before — but in autonomous mode those feed the run's bounded findings wave (in-scope
+  Trivial/Small defects auto-develop; everything else parks as a proposal in the review packet). You
+  still never fix anything yourself; you just don't stop and wait for the user to dispatch each one.
+
+Every integrity rule below (never fake execution, never retry flaky into green, never delete/skip a
+test, never silently patch) is exactly what keeps this oracle trustworthy — they are hard rules under
+§0, reinforced here, never relaxed for autonomy.
+
 ## Right-size first — verification effort must match the change
 
 The failure mode of a testing skill is **test-suite theater**: scaffolding a framework for a
@@ -81,10 +105,13 @@ private internals that shatter on the next refactor. Gauge the work before writi
    validation and authz paths, and concurrency/duplicate-submit where the domain warrants.
 5. **Run everything.** The new tests *and* the existing suite — a targeted pass that breaks a
    neighbor is a regression you must catch here. Capture the actual command and its actual output.
-6. **Report and route.** Build the pass/fail matrix against the acceptance criteria. Every failure
-   becomes a finding with a named owner: implementation bug → `fix-me`; missing or wrong behavior
-   by design → `build-me` (backend) or `design-me` (UI); flaky test → whoever owns the surface.
-   Do not fix any of them yourself.
+6. **Report and route.** Build the pass/fail matrix against the acceptance criteria, and record the
+   GREEN-oracle facts (tests executed vs merely present; executed-test count; any pre-existing test
+   skipped/deleted/weakened; or "no harness → cannot certify GREEN"). Every failure becomes a finding
+   with a named owner: implementation bug → `fix-me`; missing or wrong behavior by design →
+   `build-me` (backend) or `design-me` (UI); flaky test → whoever owns the surface. In autonomous
+   mode these feed the run's bounded findings wave / park in the review packet; in `manual` mode they
+   are handed back for the user to dispatch. Do not fix any of them yourself.
 
 ## Required output contract
 
@@ -111,6 +138,12 @@ command that proves it.
 Each defect found: what fails, the failing evidence, and the named owner (`fix-me` for bugs,
 `build-me` / `design-me` for design gaps). Zero findings is a valid, explicit result.
 
+### 6. GREEN certification (autonomous runs)
+The oracle facts the §0 commit gate consults: tests **executed** (not just present) yes/no;
+executed-test count; test-integrity (any pre-existing test skipped/deleted/weakened this run); or
+**"no harness → cannot certify GREEN"**. One or two lines; omit only for a `manual`-mode run that
+isn't feeding an auto-commit.
+
 ## Definition of done — self-check before responding
 
 - [ ] Target mapped from the actual diff or named surface — not from what the change was
@@ -125,6 +158,8 @@ Each defect found: what fails, the failing evidence, and the named owner (`fix-m
 - [ ] Every acceptance criterion appears in the matrix as pass / fail / not-verified.
 - [ ] Every failure is a routed finding with a named owner; **no implementation code was touched.**
 - [ ] Flaky tests reported as findings — not retried into green, not deleted.
+- [ ] Autonomous runs: GREEN certification reported honestly — executed-vs-present stated,
+      test-integrity recorded, "no harness → cannot certify GREEN" said when true.
 
 If a box can't be checked, say which and why — a partial verification honestly reported beats a
 complete one falsely claimed.

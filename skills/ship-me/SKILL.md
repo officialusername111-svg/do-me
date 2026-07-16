@@ -26,6 +26,18 @@ execute → verify again. You dispatch the **devops-release-engineer** agent (`.
 the heavy lifting — publish profiles, IIS site configuration, Windows Service installs — but the
 safety rules, the runbook, and the done-decision stay with you.
 
+## Autonomous mode does not apply here — the gates are §0 hard gates
+
+The Autonomy Contract (`do-me/references/DISPATCH.md` §0) makes the rest of the family
+fire-and-forget, but **ship-me is the one skill whose gates it explicitly preserves.** Live/prod
+touches, migration application, `dotnet publish` to a target, `git push`/tags — these are on §0's
+closed hard-gate list and in the ASK permission tier. So ship-me **always stops for explicit human
+approval** at those points, in every mode; there is no `manual` toggle to add because ship-me never
+left manual. What *is* autonomous is only the safe local prep an autonomous build run may reach:
+generating an idempotent migration **script** (not applying it), a Release **build**, verifying
+shippability. Everything that reaches an environment waits for the human. `/do-me manual` changes
+nothing about ship-me.
+
 ## Hard safety rules — non-negotiable at every tier
 
 These bind Trivial work and hotfixes exactly as hard as a Large release. There is no tier low

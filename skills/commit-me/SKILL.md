@@ -32,6 +32,51 @@ whole session. Suggest a branch **at most once**, and only for genuinely risky o
 schema migration touching live LGU data, a sweeping refactor); if the user says no, that's final.
 **Never push unless explicitly asked.** Committing is your job; publishing is the user's call.
 
+## Autonomous mode (fire-and-forget)
+
+When another skill's autonomous run hands off to you at close-out (DISPATCH.md §0), you commit
+**without a user prompt** — but only under the mechanical **GREEN** gate, and you are the last
+mechanical check before code lands on `main`. This mode is active whenever you're invoked as part of
+an autonomous run (a run ID is in play); a direct `/commit-me manual` or an ordinary user "commit
+this" is the interactive path and skips the run-ID machinery below.
+
+**The GREEN gate — refuse to auto-commit unless ALL hold** (this is the toolkit's single terminal
+quality gate; treat a failure as "park for human review," never "commit anyway"):
+
+1. **Executed tests, not just present.** Build passes and the tests covering the changed behavior
+   were actually run and passed. If the repo has **no test harness**, you do **not** auto-commit —
+   stage, write the review packet, and stop with a `parked: no test evidence` note. Compilation
+   alone is never GREEN.
+2. **Test-integrity clean.** Compare the test surface to the intake snapshot recorded in PLAN.md
+   (test files, executed-test count, assertion count). If any pre-existing test was **deleted,
+   skipped (`[Fact(Skip)]`/`[Ignore]`), or weakened**, do not commit — park the whole run for human
+   review and name the offending test in the packet. (Developer agents are barred from touching
+   existing tests during a run — DISPATCH Rules §2 — so this firing means the run gamed its signal.)
+3. **Protected paths park, not commit.** Any changed file implementing rates / penalties / interest
+   / surcharges / rounding / exemptions, or a migration touching assessment / collection / billing
+   tables (per the repo's `autonomy.protectedPaths` globs, else the keyword set), is **staged but
+   held out of the auto-commit** — it goes in the review packet as `parked: protected path` for the
+   human to review and commit deliberately. The rest of the run may still commit around it.
+4. **No staged secret.** The guard hook must pass (it inspects the staged diff).
+
+**How you commit in autonomous mode:**
+
+- Work on a local branch `auto/<run-id>` (create it off the recorded pre-run HEAD SHA if the
+  orchestrator hasn't). Group and message commits exactly as below, but add an **`Autonomous-Run:
+  <run-id>`** trailer to every commit alongside the `Co-Authored-By` trailer.
+- Commit the **run record** (`docs/agent-runs/<run-id>.md`) in the same run — it is written
+  write-ahead by the orchestrator; you ensure it lands with the code it documents.
+- At run end, merge `auto/<run-id>` into `main` with **`--no-ff`** so the whole run is one merge
+  commit — rollback is `git revert -m 1 <merge-sha>`. Record the merge SHA and that revert command
+  in the review packet.
+- **Never `git push`** (ASK tier) and never touch a live environment — those stay human even here.
+
+**The review packet** (your output contract in autonomous mode, in addition to the three sections
+below): the commit list with the merge SHA and one-line `git revert -m 1 <sha>` rollback; the
+test-integrity delta since intake; everything parked (protected paths, no-test, blocked-on-fact) and
+why; and a `REVIEW-PENDING` marker written at repo root. If the GREEN gate blocked the commit
+entirely, the packet leads with that and the tree is left staged, not committed.
+
 ## Right-size first — a commit is not a release process
 
 The failure mode here is **ceremony inflation**: turning a five-minute commit into a review board.
@@ -124,6 +169,10 @@ defect noticed in the diff. Empty is fine; unmentioned is not.
 - [ ] Nothing pushed; no pushed history amended or rewritten; committed to `main` where that is the
       repo's recorded convention (branch suggested at most once, only for genuinely risky work).
 - [ ] Medium/Large only: build/tests verified before committing, and the commit series summarized.
+- [ ] Autonomous mode only: the GREEN gate held (executed tests, test-integrity clean, protected
+      paths parked not committed, no staged secret); commits carry the `Autonomous-Run` trailer and
+      landed via an `auto/<run-id>` branch merged `--no-ff`; the run record was committed; the review
+      packet with the `git revert -m 1` rollback and a `REVIEW-PENDING` marker was produced.
 - [ ] All three output-contract sections present: committed, left out, flagged.
 
 ## Pairs well with

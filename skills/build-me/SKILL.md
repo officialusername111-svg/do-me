@@ -49,6 +49,27 @@ audit, testing, and maintainability — lives in `references/backend-architect-s
 file** when analyzing, building, or auditing a concern that touches an area you want to get exactly
 right. Apply it; never paste the raw list at the user.
 
+## Autonomous by default (fire-and-forget)
+
+Unless the user passes `manual`, build-me runs **fire-and-forget**: after the concern is stated, the
+team scopes, plans, builds, verifies, and (on GREEN) commits **without prompting the user again**,
+ending with one **review packet**. The canonical policy is the Autonomy Contract in
+`do-me/references/DISPATCH.md` §0 — it overrides any older gate wording below. In brief:
+
+- The step-4 Medium/Large **human plan-approval gate** becomes an advisory **plan-critic** review
+  (the plan-critic is a registered agent: it reviews the plan/diff, tags every statutory/money/PII
+  assumption, and forces any that is **not repo-verifiable** to park as `blocked-on-fact` with the
+  exact question). In `manual` mode the human approves instead.
+- The step-7 **3-cycle cap stays**, but a capped item becomes **unresolved-and-continue**: log it to
+  the review packet and move on — never sit waiting on the human. An item is `unresolved` only with
+  mechanical evidence (real failing output **and** a non-empty code diff across attempts).
+- A **GREEN** run (§0: executed tests pass, test-integrity clean, protected paths clean, no staged
+  secret) auto-invokes `commit-me`; `manual` mode stages and hands off.
+- **Assumption typing:** a repo-derivable ambiguity → assume and log; an external fact on a money /
+  statutory / rate / rounding / penalty / interest / surcharge / exemption / date-boundary /
+  personal-data surface → **never assume**, park that slice `blocked-on-fact`, finish the rest.
+- The §0 hard gates (live envs, push/tags, DB apply/publish, scope changes) still stop.
+
 ## Right-size first — the roster is a menu, not a mandate
 
 The whole team is available, which makes it dangerous: the failure mode is convening a five-agent
@@ -143,19 +164,29 @@ one pass.
    **parallelizable workstreams each paired with BT**, the test strategy (unit / integration / contract),
    and the acceptance criteria carried from BA. Medium/Large → write it to `PLAN.md` (+ `AUDIT.md` for
    brownfield findings).
-4. **Review gate (TL → human).** Check the plan against the rubric in "Definition of done." Medium/Large
-   work stops here for **human approval before any code is written.** Small/trivial proceeds.
+4. **Review gate (TL → plan-critic, or human in `manual`).** Check the plan against the rubric in
+   "Definition of done." In autonomous mode, Medium/Large plans go to the **plan-critic** for an
+   advisory review — its verdict and any `blocked-on-fact` parks replace the old human approval;
+   parked slices wait, the rest proceeds. In `manual` mode, Medium/Large stops here for human
+   approval before any code is written. Small/trivial proceeds.
 5. **Build (BD, possibly parallel).** Implement against the contract and acceptance criteria. Parallel
-   workstreams only where the contract makes them genuinely independent. Stage changes; respect the
-   project's hooks; don't auto-commit. Suggest a branch for Large work.
+   workstreams only where the contract makes them genuinely independent. **BD may not modify, weaken,
+   skip, or delete any existing test to reach green** — a failing pre-existing test is a defect to
+   fix in implementation or a finding to escalate (DISPATCH Rules §2, test-integrity). Stage changes;
+   respect the project's hooks. In autonomous mode the run auto-commits on GREEN via `commit-me`
+   (protected-path changes are staged but parked for review, not committed); in `manual` mode, don't
+   auto-commit and suggest a branch for Large work.
 6. **Integrate (TL).** Merge the workstreams and reconcile against the contract. A piece passing in
    isolation is not the same as the pieces passing together.
 7. **Verify loop (BT → TL).** BT runs the test strategy and reviews against acceptance criteria,
-   security (OWASP), and the matrix. Findings go to TL, who re-dispatches fixes to the **same** BD.
-   Repeat per concern. **Cap: 3 cycles** on a stuck item, then mark it `blocked` and escalate to the
-   human with what's failing and why — never spin indefinitely.
-8. **Done gate (TL → human).** Ship only when every box in "Definition of done" is green. Summarize to
-   the human: what changed, how it was verified, and any known limitations.
+   security (OWASP), and the matrix, and reports whether tests actually **executed** and whether the
+   test surface stayed intact (the evidence the §0 GREEN gate consults). Findings go to TL, who
+   re-dispatches fixes to the **same** BD. Repeat per concern. **Cap: 3 cycles** on a stuck item,
+   then mark it `unresolved` (with the failing output and the diffs attempted), log it to the review
+   packet, and **continue** — never spin, and never sit waiting on the human mid-run.
+8. **Done gate (TL).** The run ends when every applicable box in "Definition of done" is green.
+   In autonomous mode this produces the review packet and (on GREEN) the commit; in `manual` mode
+   summarize to the human: what changed, how it was verified, and any known limitations.
 
 ## Required output contract
 
@@ -207,13 +238,17 @@ which):
 - [ ] Data-layer sound: correct keys/indexes touched, migration is reversible/safe, no N+1, transactions
       scoped right.
 - [ ] Audit/logging present where the domain requires a trail.
-- [ ] Tests exist and pass (unit + integration where the change warrants); BT reviewed against criteria.
+- [ ] Tests exist, **actually executed**, and pass (unit + integration where the change warrants); no
+      pre-existing test was weakened/skipped/deleted to reach green; BT reviewed against criteria.
 - [ ] Code is complete and copy-pasteable — no placeholders in core logic — and follows project
       conventions.
-- [ ] Changes staged, hooks respected, nothing auto-committed; branch suggested for Large work.
+- [ ] Autonomous mode: the run committed only if GREEN (§0), with protected-path/test-integrity
+      failures parked for review; plan-critic reviewed Medium/Large plans; a review packet was
+      produced. `manual` mode: changes staged, hooks respected, nothing auto-committed, human approvals
+      honored; branch suggested for Large work.
 
 If a box can't be checked, fix it or flag it as a known limitation with a reason. If a concern hit the
-3-cycle cap, present it as `blocked` with the failing detail, not as done.
+3-cycle cap, present it as `unresolved` with the failing detail (and the diffs attempted), not as done.
 
 ## Pairs well with
 
@@ -221,8 +256,9 @@ If a box can't be checked, fix it or flag it as a known limitation with a reason
   contract `do-me` froze rather than re-deriving it.
 - `loop-me` drives batches of concerns through this cycle — `build-me` is its **main executor**.
   A concern arriving as a reattempt comes with the prior attempt's failure findings and a changed
-  hypothesis: build against those, don't restart blind. If this cycle ends `blocked`, report it as
-  `blocked` — loop-me treats that as terminal for the concern and escalates; it will not re-spin it.
+  hypothesis: build against those, don't restart blind. If this cycle hits its cap, report the
+  concern as `unresolved` with evidence — loop-me treats that as terminal for the concern and
+  continues the batch; it will not re-spin it.
 - For the UI side of a mixed concern, the work goes to `design-me` / `redesign-me`, not here.
 - If installed, BT and SA lean on `owasp-review` for the security pass, `sql-query-optimizer` for
   query work, and `code-review-checklist` at the review gate. Use them; don't reimplement them.

@@ -20,6 +20,26 @@ directly — it's to look at a concern, decide *what kind of work it actually is
 it deserves*, then route it to the skill that owns that work and the smallest team that can do it well.
 The whole point of this skill is to put the right tool on the problem and **nothing heavier.**
 
+## Autonomous by default (fire-and-forget)
+
+Unless the user passes `manual`, you run **fire-and-forget**: after the user states the concern, you
+route, coordinate, verify, and commit to a finished result **without prompting again**, and deliver
+one **review packet** at the end. Every former mid-run approval is governed by the **Autonomy
+Contract in `references/DISPATCH.md` §0** — read it; it is canonical and overrides any older gate
+wording in this file or the skills you route to. In brief, for this skill:
+
+- Plan/contract approval is replaced by an advisory **plan-critic** review (§0), not a user prompt.
+- A run that ends **GREEN** (§0's mechanical definition — executed tests pass, test-integrity clean,
+  protected paths clean, no staged secret) auto-invokes `commit-me`. Protected-path and
+  test-integrity failures **park for review**, they don't commit.
+- Every autonomous run has a **run ID** and records the pre-run HEAD SHA, so the whole run reverts
+  with one command. It ends with a review packet and a `REVIEW-PENDING` marker; **do not start a new
+  autonomous run on a repo that still has an unacknowledged marker** — surface it and stop.
+- `manual` restores the old per-gate checkpoints for that one run.
+
+The hard gates in §0 (live envs, push/tags, secrets, DB apply/publish, scope changes) still stop —
+autonomy never crosses them.
+
 You sit above the build skills and never duplicate them:
 
 - **`design-me` / `redesign-me`** — all UI/UX work. `design-me` builds new UI and audits/fixes existing
@@ -36,7 +56,8 @@ and receive work back from them:
 - **`test-me`** — owns verification: test strategy, missing tests, suite runs, pass/fail vs criteria.
 - **`secure-me`** — owns the defensive security audit-and-harden pass.
 - **`commit-me`** — owns turning finished work into clean commits (direct to main where that is the
-  repo's convention). Nothing here auto-commits; committing is always an explicit hand-off to it.
+  repo's convention). In autonomous mode it is **auto-invoked when the run ends GREEN** (DISPATCH §0);
+  in `manual` mode committing is an explicit hand-off.
 - **`ship-me`** — owns releases and deploys: publish artifacts, migration runbooks, environment
   config, IIS/on-prem targets. It gates live environments on explicit per-conversation approval.
 - **`document-me`** — owns documentation derived from actual shipped behavior: README, end-user
@@ -125,17 +146,20 @@ This is the part only `do-me` owns. When a concern is genuinely frontend **and**
 4. **Verify the whole.** Validate the integrated behaviour end to end — happy path, the failure/empty/
    error states, validation, and authz — using `build-me`'s BT and Playwright (if installed) for the UI
    behaviour. Findings cycle back through whichever side owns them; **cap at 3 cycles** per concern, then
-   mark `blocked` and escalate to the human.
+   mark `blocked`, log it to the review packet, and **continue** (unresolved-and-continue, §0) — do not
+   sit waiting on the human mid-run.
 
-For **Medium/Large** both-cases, the human approves the contract + plan before parallel build starts,
-and gets a final summary at done. Small both-cases skip the gate but still go contract-first.
+For **Medium/Large** both-cases, freeze the contract, then have the **plan-critic** review the frozen
+contract + plan (§0) — its advisory verdict and any `blocked-on-fact` parks replace the old human
+approval; parked slices wait, the rest proceeds. In `manual` mode the human approves the contract +
+plan before parallel build starts. Small both-cases go contract-first with no gate either way.
 
-**Prototype at the gate when it pays.** For a Medium/Large both-case with a real UI surface (a new
-screen, a reworked flow), have `design-me` render the frozen contract as a clickable prototype via
-`web-artifacts-builder` (if installed) — the human approves a walkable mock instead of an abstract
-DTO list, and contract defects surface before two parallel builds bake them in. The prototype is a
-disposable approval artifact, never the implementation. Skip it for Small both-cases and anything
-without a meaningful UI surface — the gate is a decision point, not a demo slot.
+**Prototype only in manual mode.** A clickable `web-artifacts-builder` prototype is an *approval*
+artifact — it only pays when a human is gating. In autonomous mode, skip it (publishing internal LGU
+UI externally is needless data egress with no one waiting to approve it); put screenshots of the
+**real** built UI in the review packet instead. In `manual` mode, for a Medium/Large both-case with a
+real UI surface, render the frozen contract as a prototype so the human approves a walkable mock
+rather than an abstract DTO list.
 
 ## Step 4 — The logic hunt (every run that changed behavior)
 
@@ -150,28 +174,43 @@ wrong for the user.
 
 - **Runs on every do-me run that built, fixed, or redesigned behavior** — Trivial included, scoped
   tightly to what the trivial change touched. Skip it only for pure lifecycle pass-throughs where
-  no behavior changed (`commit-me`, `document-me`, `test-me`, `secure-me` routing).
-- **The hunt is active — findings are developed, not parked.** Route each finding straight into
-  development as a *new* concern — `build-me` / `design-me` per domain, `loop-me` if several
-  accumulate; defects the hunter flags go to `fix-me`. The routed skills' own tier gates stay
-  intact (a Medium+ finding still stops for its own plan approval).
-- **Report the hunt as an artifact.** Once the findings reach a terminal state, load the
-  `artifact-design` skill and publish the hunt report as an artifact containing **only what the
-  logical-hunter found** — per finding: LH-id, the gap, evidence, and its outcome (developed with
-  an evidence pointer / blocked / routed to fix-me). Link it from the outcome report; nothing
-  else from the run goes in it, and an empty hunt gets a one-line in-thread note instead of an
-  artifact.
+  no behavior changed (`commit-me`, `document-me`, `test-me`, `secure-me` routing). **An empty hunt
+  is a fully successful hunt** — finding nothing to report is a valid, good outcome, never a reason
+  to invent findings.
+- **Wave-1 discipline — one bounded wave, defects only (DISPATCH §0).** Auto-develop in this same
+  run **only** the hunter's reproducible **defects** (they violate criteria a human already set),
+  and only where they tier Trivial/Small **and** sit on a surface the original intake already
+  touched — route those to `fix-me`. **Everything else parks as a proposal in the review packet**,
+  not developed: any improvement/gap, anything Medium+, and anything that needs a *new noun* (a new
+  entity, table, page, integration, or config surface). Before routing any finding, confirm it
+  traces to the intake's stated scope — a finding that grows the task is a proposal, not wave-1
+  work. Findings produced *by* wave-1 development never spawn a second wave; they park too.
+- **Report the hunt in the review packet.** List every finding — LH-id, the gap, evidence, and its
+  outcome (developed-in-wave-1 with an evidence pointer / parked-as-proposal / routed to fix-me) —
+  in the end-of-run review packet. In `manual` mode you may additionally publish the findings-only
+  artifact (load `artifact-design`); in autonomous mode the packet is the record and no external
+  artifact is published. An empty hunt gets a one-line note.
 - The hunt is one dispatch, not a cycle — it never inflates the run's tier and never reopens the
   delivered work's verdict.
 
-## State & human checkpoints (right-sized)
+## State & run bounds (right-sized)
 
-- **Trivial / Small:** an in-thread checklist is enough — no plan files.
+- **Trivial / Small:** an in-thread checklist is enough — no plan files. Decisions are logged in the
+  final review packet rather than a `PLAN.md`.
 - **Medium / Large:** the routed skill (or you, for a both-case) maintains a `PLAN.md` so the run is
-  resumable, with `AUDIT.md` for brownfield findings. Human approves the plan before code; human gets a
-  summary at done.
-- **VCS:** stage changes, respect the project's existing hooks, **don't auto-commit**; suggest a branch
-  for Large work. Never widen this without the human asking.
+  resumable, with `AUDIT.md` for brownfield findings. PLAN.md also carries the §0 run scaffolding:
+  the **run ID**, the **pre-run HEAD SHA**, a `## Budget` line (max subagent dispatches, default 40,
+  + a wall-clock ceiling), a `## Decisions` section written **write-ahead** (each choice before the
+  work it authorizes), and a `## Run State` journal (current task, wave, commits with SHAs) for
+  resume. The **plan-critic** reviews the plan (advisory) rather than the human approving it, unless
+  `manual`.
+- **Single-writer state:** only you (the orchestrating session) write `PLAN.md` / `LOOP-STATE.md` /
+  the run record; worktree subagents return report shapes and never touch state files. Gitignore the
+  state files. Serialize worktree merge-backs `--ff-only` with a build check between them.
+- **VCS in autonomous mode:** a GREEN run (§0) auto-invokes `commit-me`, which lands the run on an
+  `auto/<run-id>` branch merged `--no-ff` and writes the committed run record. Protected-path or
+  test-integrity failures **park for review** instead of committing. `git push` is never automatic
+  (ASK). In `manual` mode, stage and hand off. Never widen this without the human asking.
 
 ## Definition of done — self-check before responding
 
@@ -182,11 +221,15 @@ wrong for the user.
 - [ ] Routed to the correct owner — `design-me` / `redesign-me` for UI, `build-me` for backend — without
       re-implementing their logic here.
 - [ ] Both-case only: contract frozen *before* parallel work; integrated; verified end to end; `blocked`
-      items escalated, not spun on past 3 cycles.
-- [ ] Human checkpoints honoured for Medium/Large; nothing auto-committed.
-- [ ] Logic hunt dispatched at close-out on every run that changed behavior; every finding
-      developed to a terminal state (developed / blocked / fix-me-routed) and the findings-only
-      artifact report published — none silently dropped.
+      items logged and the run continued, not spun on past 3 cycles.
+- [ ] Autonomous mode: no user prompt after intake; plan-critic reviewed the plan; the run
+      committed only if GREEN (§0), with protected-path / test-integrity failures parked; a run ID
+      and pre-run SHA were recorded. `manual` mode: human checkpoints honoured instead.
+- [ ] Logic hunt dispatched at close-out on every run that changed behavior; wave-1 developed only
+      in-scope Trivial/Small defects, everything else parked as a proposal — every finding accounted
+      for in the review packet, none silently dropped.
+- [ ] The run ends with the review packet and a `REVIEW-PENDING` marker (autonomous mode); no new
+      autonomous run was started over an unacknowledged marker.
 - [ ] The result is reported back as one coherent outcome, not two disconnected halves.
 
 ## Scope guard

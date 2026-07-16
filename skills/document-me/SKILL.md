@@ -32,6 +32,24 @@ Your artifact palette: **README**, **end-user guides** (plain language, step-by-
 where the tooling allows), **admin/operator guides**, **API and inline reference**, **release
 notes**, and a shared **GLOSSARY.md** for domain terms used consistently across everything else.
 
+## Autonomous by default (fire-and-forget)
+
+Unless the user passes `manual`, document-me runs **fire-and-forget**: it scopes, reads the code,
+outlines, drafts, verifies, and (on GREEN — here "verified against code") commits **without prompting
+again**, ending with one **review packet**. Per the Autonomy Contract
+(`do-me/references/DISPATCH.md` §0, canonical):
+
+- The Medium/Large **"human approves the outline before drafting"** gate becomes a **plan-critic**
+  review of the outline (advisory) in autonomous mode; drafting proceeds. In `manual` mode the human
+  approves the outline as before.
+- Docs are not code, so there is no test harness to gate on — GREEN here means every claim was
+  verified against the current build. On that basis the run auto-invokes `commit-me`; `manual` mode
+  stages and hands off.
+- Findings that code-reading uncovers feed the run's bounded findings wave / park as proposals in the
+  review packet, rather than waiting on a per-finding user prompt (document-me still never fixes code
+  itself).
+- The §0 hard gates still bind.
+
 ## Name the reader — every artifact has exactly one audience
 
 Before drafting anything, name who it is for, and write to exactly that reader:
@@ -94,8 +112,9 @@ tier:
    and migrations the docs will describe; run the app where behavior is in question, and capture
    screenshots for user guides where the tooling allows (`gstack`, if installed). Existing docs
    are input for *structure* only — never evidence of behavior.
-3. **Outline (Medium/Large only).** Artifact list plus per-artifact outline; **the human approves
-   the outline before drafting starts.** Small and Trivial skip this gate.
+3. **Outline (Medium/Large only).** Artifact list plus per-artifact outline; in autonomous mode the
+   **plan-critic reviews the outline** (advisory) and drafting proceeds; in `manual` mode the human
+   approves the outline before drafting starts. Small and Trivial skip this gate.
 4. **Draft.** Dispatch technical-writer for the heavy lifting; every artifact written to its named
    audience, as complete content — not skeletons, not "TBD" sections.
 5. **Verify every claim.** Trace each instruction, path, command, field name, and behavior claim
@@ -104,8 +123,9 @@ tier:
 6. **Route what the reading uncovered.** Reading code closely finds things: behavior that is
    broken → `fix-me`; behavior missing versus evident intent → `build-me` / `design-me`. These are
    findings to hand off with context — never things to fix here.
-7. **Deliver.** The artifacts in place in the repo, plus the report below. Stage changes, respect
-   the project's hooks, don't commit — that hand-off belongs to `commit-me`.
+7. **Deliver.** The artifacts in place in the repo, plus the report below. In autonomous mode a
+   verified pass auto-invokes `commit-me`; in `manual` mode, stage changes, respect the project's
+   hooks, and hand off committing to `commit-me`.
 
 ## Required output contract
 
@@ -138,13 +158,16 @@ change, the module whose existing docs are still accurate.
       end-user guides, no hand-holding in the README.
 - [ ] **Right-sized**: no doc tooling the project didn't need, no 40-page manual, and every skip
       or heavy choice has a one-line reason.
-- [ ] Medium/Large: the **outline was approved by the human before the writing pass**.
+- [ ] Medium/Large: the outline was **plan-critic reviewed** before the writing pass (autonomous), or
+      human-approved (`manual`).
 - [ ] Contradictions between code and intended behavior were **routed as findings**, not patched
       here — and none were silently papered over in the prose.
 - [ ] Domain terms are defined once in `GLOSSARY.md` and used consistently across artifacts.
 - [ ] Artifacts are complete content in place — no outlines, placeholders, or TODO sections
       shipped as deliverables.
-- [ ] Changes staged, hooks respected, nothing committed — committing is `commit-me`'s hand-off.
+- [ ] Autonomous mode: verified pass auto-committed via `commit-me`, review packet produced.
+      `manual` mode: changes staged, hooks respected, nothing committed — committing is `commit-me`'s
+      hand-off.
 
 ## Pairs well with
 

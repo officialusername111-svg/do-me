@@ -24,6 +24,26 @@ fear: a clean area is reported as clean, and a finding you can't evidence doesn'
 defensive and authorized** — you never write offensive tooling, exploits, or anything aimed at a
 system you don't own.
 
+## Autonomous by default (fire-and-forget)
+
+Unless the user passes `manual`, secure-me runs **fire-and-forget**: it scopes, gathers evidence,
+ranks, remediates, and (on GREEN) commits **without prompting again**, ending with one **review
+packet**. Per the Autonomy Contract (`do-me/references/DISPATCH.md` §0, canonical):
+
+- **Straightforward hardening fixes apply in-run** — a `[ValidateAntiForgeryToken]`, a parameterized
+  query, a cookie flag, an added `[Authorize]`: make the fix, verify, include it in the packet.
+- **Sweeping structural changes park for human review, they do not auto-commit.** Auth-model rework,
+  a connection-string migration, or a major dependency bump lands on a **protected path** or an
+  ASK-tier operation (DB apply, publish) — so under §0 it is **staged and parked for review in the
+  packet**, never committed autonomously. This is the old "human approval before sweeping changes"
+  gate, kept — but it parks the change instead of blocking the run on a prompt, and the rest of the
+  pass proceeds. (On LGU systems this conservatism is deliberate: statutory/auth correctness outranks
+  speed.) In `manual` mode the sweeping change stops for explicit human approval as before.
+- The **plan-critic** reviews the remediation plan on Medium/Large passes (advisory) in place of the
+  human sign-off; its `blocked-on-fact` parks are honored.
+- The §0 hard gates (authorization scope, no offensive tooling, secrets, DB apply, push) still bind —
+  autonomy never crosses the defensive boundary or the authorization limit.
+
 ## Right-size first — an audit is a lens, not a dragnet
 
 Gauge what the request actually is before mobilizing anything. The right amount of process is the
@@ -94,13 +114,17 @@ records. Use **OWASP Top 10** as the frame and these stack-specific checks as th
 4. **Remediate per the tier.** **Blocker/High-severity findings: fix now** — apply the patch, or if
    the fix is behavioral or risky, propose the precise diff and say in one line why you didn't apply
    it. **Medium/Low-severity findings: document with the fix named** — exact change, exact place.
-   **Medium/Large-tier passes** stop for human approval before sweeping changes (auth-model rework,
-   connection-string migration, major dependency bumps).
+   **Sweeping changes** (auth-model rework, connection-string migration, major dependency bumps)
+   **park for human review** rather than auto-committing — they hit protected paths / ASK-tier
+   operations under §0; make the change, stage it, and put it in the review packet with the risk
+   note. In `manual` mode these stop for explicit human approval before you apply them.
 5. **Re-test.** Verify the build passes, then hand post-hardening regression verification to
    `test-me` — brief it on what was hardened and which behaviors must still hold (the login still
    logs in, the upload still uploads) instead of improvising an ad-hoc re-test here. A hardening
    pass that breaks the app is a new incident.
-6. **Report** per the output contract. Stage changes, respect hooks, don't auto-commit.
+6. **Report** per the output contract. In autonomous mode a GREEN pass auto-commits the applied
+   hardening via `commit-me` (sweeping/protected-path changes parked for review); in `manual` mode,
+   stage changes, respect hooks, don't auto-commit.
 
 ## Required output contract
 
@@ -146,8 +170,11 @@ run.
 - [ ] Medium/Low-severity findings documented with the exact fix named.
 - [ ] Clean areas stated as checked-clean, so absence of findings reads as coverage, not a gap.
 - [ ] Fixes re-tested: build passes, touched behavior verified, re-test note included.
-- [ ] Human approval obtained before any sweeping change on Medium/Large-tier passes.
-- [ ] Changes staged, hooks respected, nothing auto-committed.
+- [ ] Sweeping changes (auth-model rework, connection-string migration, major dependency bumps)
+      parked for human review, never auto-committed (autonomous) — or explicitly approved before
+      applying (`manual`).
+- [ ] Autonomous mode: applied hardening committed only if GREEN (§0), plan-critic reviewed the
+      Medium/Large plan, review packet produced. `manual` mode: changes staged, nothing auto-committed.
 - [ ] The defensive boundary held — no offensive tooling, no exploit code, nothing aimed beyond this
       codebase.
 

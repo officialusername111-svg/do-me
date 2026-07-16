@@ -3,7 +3,7 @@ name: set-me
 description: >-
   Install, sync, or verify the do-me toolkit — the full -me skill family (do-me, build-me,
   design-me/redesign-me, fix-me, test-me, secure-me, commit-me, ship-me, document-me, loop-me),
-  the 12 specialist agents, the DISPATCH.md registry, hooks, and global config — into ~/.claude on
+  the 15 specialist agents, the DISPATCH.md registry, hooks, and global config — into ~/.claude on
   the current machine, global-first. Use WHENEVER the user says "set up my toolkit", "install
   do-me", "sync my skills", "update the toolkit", or is onboarding a fresh machine or repairing a
   drifted setup. ALSO trigger when the user clones the do-me bundle repo and asks to apply it.
@@ -30,7 +30,7 @@ project folders hold only genuinely project-specific settings.
 ```
 do-me/                       ← the cloned bundle repo (this skill lives in it)
   skills/<name>/SKILL.md     ← the -me family incl. this skill; do-me/references/DISPATCH.md
-  agents/*.md                ← 12 deep-specialist subagents
+  agents/*.md                ← 15 deep-specialist subagents (incl. plan-critic, logical-hunter, reference-enforcer)
   commands/redesign-me.md    ← the redesign-me command alias
   hooks/guard-secrets.sh     ← PreToolUse guard: blocks staging/committing .env
   config/CLAUDE.md           ← global working-preferences template
@@ -56,8 +56,11 @@ do-me/                       ← the cloned bundle repo (this skill lives in it)
   keys are theirs — leave them, list them in the report as "local-only".
 - **Never overwrite `CLAUDE.md` or `settings.json` blind.** CLAUDE.md: create it if absent; if it
   exists and differs, show the diff and ask before replacing. settings.json: **merge** the
-  fragment's `hooks` and `permissions.allow` entries into the existing file (add missing entries,
-  never remove existing ones), and validate the result parses as JSON before writing.
+  fragment's `hooks`, `permissions.allow`, **and `permissions.ask`** entries into the existing file
+  (add missing entries to each array, never remove existing ones), and validate the result parses as
+  JSON before writing. The `ask` tier is load-bearing for the Autonomy Contract — an install that
+  merges `allow` but drops `ask` would let destructive/DB/publish/push commands run silently in
+  fire-and-forget mode, so treat a missing `ask` array as a broken install, not a cosmetic gap.
 - **Back up before overwrite.** Any file you are about to replace with different content gets
   copied to `~/.claude/.set-me-backup/<timestamp>/` first. Cheap insurance; mention it once in the
   report.
@@ -99,12 +102,14 @@ routing degrades. The sweep finds and removes them, with these rules:
    `subagent-driven-default.json` to `~/.claude/`. Preserve UTF-8 without BOM.
 5. **Merge config.** `CLAUDE.md` per the rule above. `settings.json`: ensure the SessionStart hook
    (cat subagent-driven-default.json), the PreToolUse guard (bash guard-secrets.sh), and each
-   `permissions.allow` entry from the fragment exist — add what's missing, keep everything else,
-   validate JSON.
+   `permissions.allow` **and `permissions.ask`** entry from the fragment exist — add what's missing
+   to each array, keep everything else, validate JSON.
 6. **Verify.** List the installed skills and agents (count must cover the bundle), confirm
-   `settings.json` parses, confirm `DISPATCH.md` exists at
-   `~/.claude/skills/do-me/references/DISPATCH.md` (it is the registry the family depends on —
-   an install without it is broken), and confirm no managed item resolves from two places.
+   `settings.json` parses, confirm the fragment's `permissions.ask` entries are all present (the
+   autonomy hard-gate tier — a sync that lost them is broken), confirm `DISPATCH.md` exists at
+   `~/.claude/skills/do-me/references/DISPATCH.md` **and contains its `§0` Autonomy Contract** (the
+   family's autonomous behavior depends on it), confirm the `plan-critic` agent is installed, and
+   confirm no managed item resolves from two places.
 7. **Report** per the output contract. If anything was skipped or needs a restart (a fresh session
    picks up new skills and drops removed duplicates), say so plainly.
 
@@ -125,8 +130,9 @@ for. Backup location if anything was overwritten.
 What was added to settings.json (and that it still parses), what happened with CLAUDE.md.
 
 ### 5. Verification
-Skill count, agent count, DISPATCH.md present, settings valid, no double-loads — with the actual
-check output, not assertions. Note that new skills register on the next session start.
+Skill count, agent count, DISPATCH.md present (with §0 Autonomy Contract), `permissions.ask` tier
+merged, `plan-critic` installed, settings valid, no double-loads — with the actual check output, not
+assertions. Note that new skills register on the next session start.
 
 ## Definition of done — self-check before responding
 

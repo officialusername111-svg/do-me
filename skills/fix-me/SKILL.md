@@ -25,6 +25,23 @@ before diagnosis** — never theorize past what the error, logs, or data actuall
 **diagnosis before fix** — no code changes until the root cause is stated. A fix without a diagnosis
 is a guess wearing a commit message.
 
+## Autonomous by default (fire-and-forget)
+
+Unless the user passes `manual`, fix-me runs **fire-and-forget**: it reproduces, diagnoses, fixes,
+proves, and (on GREEN) commits **without prompting again**, ending with one **review packet**. fix-me
+is already the family's most autonomous skill (diagnosis-first, infer-and-proceed) — so this changes
+little. Per the Autonomy Contract (`do-me/references/DISPATCH.md` §0, canonical):
+
+- On a **GREEN** run (the regression test observed failing-before/passing-after is the executed-test
+  evidence; test-integrity clean; protected paths clean; no staged secret) the fix auto-invokes
+  `commit-me`. In `manual` mode, stage and hand off.
+- If the root-cause fix lands on a **protected path** (rate/penalty/interest/rounding/exemption code,
+  or an assessment/collection migration), the fix is made and **staged but parked for human review**
+  in the packet — not auto-committed.
+- **The safety stops below are §0 hard gates, not ceremony, and are unchanged:** never ship a
+  speculative fix for an unreproducible bug; the regression test must be observed failing-before /
+  passing-after; a fix that balloons into a redesign is a scope change — surface it and hand off.
+
 ## Right-size first — rigor is not ceremony
 
 Diagnosis discipline scales; paperwork doesn't. Two failure modes bracket this skill, and both are
@@ -87,7 +104,9 @@ debugging protocol; do not reimplement it. Either way, these gates hold:
    still in step 3. If the sentence implicates multiple components or a design flaw, stop here and
    hand off per the Medium/Large tier above.
 5. **Apply the minimal fix at the right layer.** The layer the sentence names, nothing else in the
-   diff. Stage changes, respect the project's hooks, don't auto-commit.
+   diff. Stage changes, respect the project's hooks. In autonomous mode the run auto-commits on GREEN
+   via `commit-me` (a protected-path fix is staged but parked for review); in `manual` mode, don't
+   auto-commit.
 6. **Write the regression test — fails before, passes after.** Run it against the unfixed code (or
    stash the fix) and watch it fail for the diagnosed reason; then apply the fix and watch it pass.
    A test you never saw fail proves nothing. Trivial tier: a recorded self-check of the exact broken
@@ -135,7 +154,8 @@ exercised, callers reviewed.
 - [ ] Medium/Large: diagnosis **handed off** to `build-me` / `design-me` / `do-me` with the full
       diagnosis document — not rebuilt here.
 - [ ] Output follows **Symptom → Root cause → Fix → Proof → Blast radius**, every section present.
-- [ ] Changes staged, hooks respected, nothing auto-committed.
+- [ ] Autonomous mode: committed only if GREEN (§0), protected-path fixes parked for review, review
+      packet produced. `manual` mode: changes staged, hooks respected, nothing auto-committed.
 
 ## Pairs well with
 
