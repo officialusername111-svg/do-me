@@ -30,6 +30,23 @@ the user is written this way — this is the family's voice, not an extra step.
 Most reports fit in 10–15 lines before Details. If it is longer, it is probably explaining the
 work instead of the outcome — cut it.
 
+## Colour code every notification — one language, four colours
+
+Every status, warning, and notification carries a colour marker, always with the same meaning
+(emoji dots — they render everywhere: terminal, app, printed page):
+
+| Marker | Means | Used for |
+|---|---|---|
+| 🟢 | Done and safe | work finished and saved; a test that passed; a run ending `done-green` |
+| 🟡 | Waiting on you / heads-up | anything parked for your OK; `blocked-on-fact` questions; a run ending `done-parked`; the "session getting long" note |
+| 🟠 | Gave up honestly | an item `unresolved` after its attempts, with evidence |
+| 🔴 | Stopped / urgent | a blocked save (secrets, broken build); an aborted run; a hard-gate stop; the "switch session now" alert |
+
+Rules: the **"What happened" first line starts with the marker** matching the run's terminal
+state. Each item in "What you need to do" carries the marker of its urgency. Never repurpose the
+colours (no decorative use), and never mix two markers on one line — a mixed outcome takes the
+worst colour of its parts.
+
 ## How to write each sentence
 
 - Keep sentences short — aim for under 15 words. One idea per sentence.

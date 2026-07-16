@@ -38,11 +38,11 @@ mb=$(awk -v b="$size" 'BEGIN { printf "%.1f", b/1000000 }')
 
 if [ "$level" -eq 2 ]; then
   cat <<EOF
-SESSION-LENGTH ALERT (level 2 of 2): this session's transcript is ${mb} MB — very long. Long sessions hit token limits mid-work and lose quality. In your NEXT reply, tell the user plainly (per the tell-me shape): this session is very long; please start a fresh session for anything new — the memory folder carries the context over, so nothing is lost. Finish only what is already in flight here. This alert fires once.
+🔴 SESSION-LENGTH ALERT (level 2 of 2): this session's transcript is ${mb} MB — very long. Long sessions hit token limits mid-work and lose quality. In your NEXT reply, tell the user plainly (per the tell-me shape), leading the note with the 🔴 marker: this session is very long; please start a fresh session for anything new — the memory folder carries the context over, so nothing is lost. Finish only what is already in flight here. This alert fires once.
 EOF
 else
   cat <<EOF
-SESSION-LENGTH NOTE (level 1 of 2): this session's transcript is ${mb} MB — getting long. In your next reply, add a short plain-words note to the user: the session is getting long; it is a good time to wrap up, and any NEW piece of work is better started in a fresh session (the memory folder carries the context). This note fires once; a stronger alert fires at 4 MB.
+🟡 SESSION-LENGTH NOTE (level 1 of 2): this session's transcript is ${mb} MB — getting long. In your next reply, add a short plain-words note to the user, leading it with the 🟡 marker: the session is getting long; it is a good time to wrap up, and any NEW piece of work is better started in a fresh session (the memory folder carries the context). This note fires once; a stronger 🔴 alert fires at 4 MB.
 EOF
 fi
 exit 0
