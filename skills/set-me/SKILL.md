@@ -2,8 +2,8 @@
 name: set-me
 description: >-
   Install, sync, or verify the do-me toolkit — the full -me skill family (do-me, build-me,
-  design-me/redesign-me, fix-me, test-me, secure-me, commit-me, ship-me, document-me, loop-me),
-  the 15 specialist agents, the DISPATCH.md registry, hooks, and global config — into ~/.claude on
+  design-me/redesign-me, fix-me, test-me, secure-me, commit-me, ship-me, document-me, loop-me,
+  tell-me), the 15 specialist agents, the DISPATCH.md registry, hooks, and global config — into ~/.claude on
   the current machine, global-first. Use WHENEVER the user says "set up my toolkit", "install
   do-me", "sync my skills", "update the toolkit", or is onboarding a fresh machine or repairing a
   drifted setup. ALSO trigger when the user clones the do-me bundle repo and asks to apply it.

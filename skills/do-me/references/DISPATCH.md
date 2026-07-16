@@ -95,7 +95,10 @@ echoed in the intake summary the human sees before the run goes dark.
 
 Every autonomous run ends with a packet — commit list + diffstat, run ID + `git revert` command,
 test-integrity delta since intake, all logged assumptions, all `blocked-on-fact` and parked items,
-any protected-path demotions, links to the run record. A **`REVIEW-PENDING`** marker is written;
+any protected-path demotions, links to the run record. **The packet — and every -me skill's final
+report or reply — is written in plain language per the `tell-me` skill** (load it before writing):
+outcome first, everyday words, the reader's one question asked directly, exact technical detail
+kept precise under a final "Details" section. A **`REVIEW-PENDING`** marker is written;
 `do-me` / `loop-me` **refuse to start a new autonomous run on that repo while an unacknowledged
 marker exists**. In autonomous mode, do **not** publish prototypes/artifacts externally — put
 screenshots of the *real* built UI in the packet instead.

@@ -30,6 +30,14 @@ human checkpoints for that one run. `ship-me`'s live-environment gates are never
   build-me as main executor, 3 attempts per item then unresolved-and-continue, LOOP-STATE.md handoff
 - `/set-me` — installs/syncs this whole toolkit onto a machine from the do-me bundle repo
   (https://github.com/officialusername111-svg/do-me)
+- `/tell-me` — plain-language reporting: shapes every report and reply (outcome first, everyday
+  words, exact technical detail kept under a final "Details" section)
+
+## Reporting — every report and reply, plain words
+Every report, review packet, summary, and reply to me is written per the `tell-me` skill: first
+line answers "did it work?", short everyday sentences, my one required action asked as a direct
+question, and the exact technical record (files, commands, IDs) precise under a final "Details"
+heading. This applies to every -me skill's output and to ordinary replies that explain results.
 
 ## Entry convention & dispatch registry
 Invoke a domain skill directly when the domain is obvious; `/do-me` when unsure; `/loop-me` for
