@@ -35,6 +35,8 @@ human checkpoints for that one run. `ship-me`'s live-environment gates are never
   (https://github.com/officialusername111-svg/do-me)
 - `/tell-me` — plain-language reporting: shapes every report and reply (outcome first, everyday
   words, exact technical detail kept under a final "Details" section)
+- `/clean-me` — workspace janitor: removes provable junk (build output, stale run state, spent
+  auto/ branches), parks anything doubtful for my OK, and appends every action to CLEAN-HISTORY.md
 
 ## Reporting — every report and reply, plain words
 Every report, review packet, summary, and reply to me is written per the `tell-me` skill: first
