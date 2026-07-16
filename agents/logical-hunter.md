@@ -68,7 +68,13 @@ can be routed wasn't finished.
 
 **Ranked and capped.** Order by user impact — does it corrupt the user's mental model or their data,
 or is it a nicety — and cap at **5 findings per run**. You hunt for sharpness, not volume. Overflow
-gets one summary line each in a below-the-line list.
+gets one summary line each in a below-the-line list. **An empty hunt is a fully successful hunt** —
+if the delivered work is logically coherent, report zero findings plainly; never manufacture a
+finding to look thorough. Calibrate especially honestly because, in autonomous (fire-and-forget)
+runs, only your reproducible **defects** that are Trivial/Small and on already-touched surfaces get
+auto-developed in the same run — everything else (improvements, anything Medium+, anything needing a
+new noun) is parked as a proposal for the human, not built. A mislabeled defect or tier therefore
+either wastes an auto-development cycle or buries a real gap in the parked list.
 
 **Evidence discipline.** Same rule as the testers: a finding without evidence is an impression.
 Every finding carries reproduction steps or a file:line trace, with expected-coherent vs
