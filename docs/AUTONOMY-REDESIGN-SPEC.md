@@ -139,6 +139,24 @@ repo while an unacknowledged marker exists**.
 - **REVIEW-PENDING** marker — one per repo with an unacknowledged run.
 - All state files gitignored except the committed run record.
 
+## v2.1 addendum — review panels and the run envelope (2026-07-16)
+
+Owner feedback after v2 shipped: liked the independent-reviewers pattern; wanted it everywhere, plus
+an explicit task start/end so nothing loops unbounded. Added to §0 and wired through the skills:
+
+- **Independent review panels** — high-stakes gates escalate from one plan-critic to a 3-lens
+  blind panel (correctness/statutory, security/data, simplicity/scope); mechanical merge (any HALT
+  halts, parks union, splits recorded). Triggers: Large tier, protected paths, statutory/money/PII.
+  Findings (logical-hunter, secure-me, failed verification) face a per-finding refuter before they
+  become work. ship-me's runbook is panel-reviewed before the human sees it. fix-me's Medium/Large
+  diagnosis is refuted before hand-off. Panels are advisory, count against the budget.
+- **Run lifecycle (the run envelope)** — a run starts only after the intake record (run ID, pre-run
+  SHA, scope statement, budget, intake echo) with preconditions (no unacknowledged REVIEW-PENDING;
+  clean tree or run-ID-named stash — closes the dirty-tree red-team passthrough). Every run ends in
+  exactly one terminal state: done-green / done-parked / unresolved / aborted. "Stop" from the human
+  aborts immediately to the packet. New work after a terminal state = a new run. Anti-loop
+  invariant: no counter, no loop — every repeating construct's cap and counter live in run state.
+
 ## Rollout
 
 1. Edit the bundle repo: DISPATCH §0, the 11-skill sweep, settings.fragment.json (ALLOW+ASK),

@@ -20,7 +20,8 @@ behavior for that one run. Autonomy is the default; ceremony is the opt-in.
 - **Plan / contract / outline approval → advisory critic review.** The plan is written to PLAN.md,
   then the `plan-critic` agent reviews it (see registry) and the run proceeds. The critic is
   **advisory, not independent oversight** — never record its verdict as "review" in a run record;
-  record it as "automated plan/diff review (advisory)."
+  record it as "automated plan/diff review (advisory)." High-stakes gates escalate from one critic
+  to a **review panel** (see "Independent review panels" below).
 - **Never-auto-commit → auto-commit on GREEN.** A run that ends green auto-invokes `commit-me`:
   grouped logical commits, direct to main per repo convention. **GREEN is defined mechanically**
   (below) — build + tests passing is necessary but not sufficient.
@@ -40,6 +41,76 @@ behavior for that one run. Autonomy is the default; ceremony is the opt-in.
   rounding / penalty / interest / surcharge / exemption / date-boundary / personal-data surface →
   **never assume**: park that dependent slice `blocked-on-fact` with the exact question phrased for
   the human, and complete the rest of the run.
+
+### Independent review panels — many blind reviewers beat one
+
+One reviewer from the same model family is weak oversight; several **independent, mutually blind**
+reviewers with different assignments catch what any one of them misses. The panel protocol:
+
+- **A panel is 3 parallel `plan-critic` dispatches, each briefed with a different lens** —
+  (1) *correctness/statutory*: is the logic and the law right; (2) *security/data*: what can leak,
+  break, or be destroyed; (3) *simplicity/scope*: what grew beyond the ask, what is over-built.
+  Each panelist receives ONLY the intake text, the repo, and the plan/diff — never another
+  panelist's output, and never the planner's rationale. Blindness is the point; do not "share
+  context to save tokens."
+- **Merge rule (mechanical, no judgment call):** any panelist HALT → the run halts to report. Any
+  panelist park (`blocked-on-fact`, protected-path, out-of-scope noun) → that slice parks; parks
+  are unioned, never voted away. Disagreements between panelists are recorded verbatim in the
+  review packet — a split panel is information the human wants, not noise to smooth over.
+- **When a panel convenes (right-sized — panels are expensive):**
+  - **Large tier**, or any work touching **protected paths** or a statutory/money/PII rule → full
+    3-lens panel at the plan gate (and at the diff, if the work is already built).
+  - **Medium tier** → single plan-critic (as before).
+  - **Trivial / Small** → no reviewer; the mechanical gates alone carry it.
+- **Findings get a refutation pass before they become work.** On Medium+ runs, each finding from
+  the logical-hunter, secure-me's audit, or a failed verification is handed to one adversarial
+  refuter (a `plan-critic` briefed "try to kill this finding") before it may enter wave-1
+  development or a queue. A finding that dies under refutation is recorded as refuted, not built.
+  This is what keeps auto-developed findings from being plausible-but-wrong.
+- **Panels are advisory, like the single critic** — recorded as "automated panel review
+  (advisory), lenses: …" and never as independent human oversight. Every panel dispatch counts
+  against the run budget.
+
+### Run lifecycle — every run has a formal start and a guaranteed end
+
+A run that cannot state when it started, what it may spend, and how it ends is a loop waiting to
+happen. No -me skill does work outside a run envelope.
+
+**START — a run exists only after the intake record is written.** Before any work, the
+orchestrating skill writes (to PLAN.md / LOOP-STATE.md, or in-thread for Trivial/Small): the
+**run ID**, the **pre-run HEAD SHA**, a one-paragraph **scope statement** (what is in, what is
+explicitly out), the **tier**, the **budget** (max subagent dispatches, default 40, and a
+wall-clock ceiling), and the **intake echo** (what the run understood, including any resumed queue
+rows with their provenance tags). Preconditions checked at start:
+
+1. **No unacknowledged `REVIEW-PENDING` marker** on this repo — surface it and stop.
+2. **Clean working tree**, or the human's uncommitted work is stashed under a run-ID-named stash
+   that MUST be restored and reported in the packet. Never silently mix a run's changes with the
+   human's work-in-progress.
+
+**END — every run terminates in exactly one of four states, and cannot continue past it:**
+
+- `done-green` — GREEN held; committed; review packet delivered.
+- `done-parked` — work finished but something waits for the human (protected paths,
+  blocked-on-fact); staged + packet.
+- `unresolved` — caps were hit; evidence attached; packet delivered.
+- `aborted` — budget exhausted, watchdog fired, panel HALT, hard-gate hit that cannot park, or the
+  **human said stop**. State journaled; packet delivered with what was and wasn't done.
+
+New work discovered at or after the terminal state — a parked proposal, a new idea, a wave-2
+finding — is **a new run with a new ID, a fresh budget, and its own intake record**, started only
+after the previous packet is acknowledged. Runs never chain themselves.
+
+**The stop command.** The human saying "stop" (or "abort", "halt") at any point is an immediate
+`aborted` terminal: finish the tool call in flight, journal state, write the packet. Never argue,
+never "just finish this one thing."
+
+**No counter, no loop — the anti-loop invariant.** Every repeating construct in the family carries
+a named cap and a counter that lives in the run's state, updated per iteration: attempts (3/item),
+verify cycles (3), enforcer cycles (3), findings waves (1), panel size (3), global dispatches
+(budget). If you are about to repeat something and cannot point at its counter in the state file,
+you are in an unbounded loop — stop, add the counter or end the run as `unresolved`. The watchdog
+(no state transition for N minutes → abort to packet) backstops everything above.
 
 ### GREEN — the mechanical commit gate (a run may auto-commit only if ALL hold)
 
@@ -132,16 +203,16 @@ user → do-me (routes) → skill (process, gates, user contact) → agent (craf
 
 | Skill | Bench (may dispatch) | Dispatch packet (what the agent receives) | Return shape |
 |---|---|---|---|
-| build-me | team-leader · business-analyst · system-analyst · database-architect · backend-developer · backend-tester | scoped task, tier, acceptance criteria / requirement IDs, frozen contract if one exists, constraints (migrations allowed? tables in scope?) | standard report (below) |
+| build-me | team-leader · business-analyst · system-analyst · database-architect · backend-developer · backend-tester · plan-critic (plan gate: solo Medium, 3-lens panel Large/protected) | scoped task, tier, acceptance criteria / requirement IDs, frozen contract if one exists, constraints (migrations allowed? tables in scope?) | standard report (below) |
 | design-me / redesign-me | ux-ui-designer · frontend-developer · frontend-tester · reference-enforcer (only when a reference image is attached) | scoped task, approved direction or design spec, UI-only boundary, relevant states (loading/empty/error); for the enforcer: reference image path(s), user strictness note, built surface + how to run the app, viewport hint, prior discrepancy list on cycle 2+ | standard report; enforcer returns PASS/FAIL/BLOCKED + ranked discrepancy list (RE-ids) + screenshot evidence |
-| fix-me | backend-developer *or* frontend-developer (the repair) · matching tester (blast-radius regression) | the completed diagnosis: root-cause sentence, evidence, failure findings, affected path | standard report |
+| fix-me | backend-developer *or* frontend-developer (the repair) · matching tester (blast-radius regression) · plan-critic (refuter over a Medium/Large diagnosis before hand-off) | the completed diagnosis: root-cause sentence, evidence, failure findings, affected path | standard report |
 | test-me | backend-tester · frontend-tester | what changed (or named target), acceptance criteria, test strategy per layer | pass/fail matrix + findings, evidence attached |
-| secure-me | security-tester | scope (diff / surface / whole app), tier, prior findings to re-test | findings table: `# · Finding · OWASP/area · Blocker/High/Med/Low · Evidence (file:line) · Fix` |
-| ship-me | devops-release-engineer (deploy mechanics) · database-architect (migration/schema-change *design* consult) · technical-writer (release-notes drafting, in-release) | release scope, target env, the runbook step being executed; for notes: version + what shipped | step output with real command results; drafted notes for ship-me to review/own |
+| secure-me | security-tester · plan-critic (refuter per finding on Medium/Large; panel on the remediation plan when sweeping) | scope (diff / surface / whole app), tier, prior findings to re-test | findings table: `# · Finding · OWASP/area · Blocker/High/Med/Low · Evidence (file:line) · Fix` |
+| ship-me | devops-release-engineer (deploy mechanics) · database-architect (migration/schema-change *design* consult) · technical-writer (release-notes drafting, in-release) · plan-critic (3-lens panel over the runbook BEFORE it is presented to the human) | release scope, target env, the runbook step being executed; for notes: version + what shipped | step output with real command results; drafted notes for ship-me to review/own |
 | document-me | technical-writer | human-approved outline (Medium/Large), audience per artifact, the code surfaces to verify against | the artifacts + verification notes |
 | commit-me | — (no bench; works the tree directly) | — | — |
-| do-me | plan-critic (advisory plan/diff review, autonomous mode) · logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement findings as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached; do-me develops them and publishes the findings-only artifact report |
-| loop-me | logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); findings become the follow-up queue, executed under normal loop semantics; loop-me publishes the findings-only artifact report |
+| do-me | plan-critic (solo Medium; 3-lens panel Large/protected; refuter per hunt finding) · logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement findings as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached; do-me develops them and publishes the findings-only artifact report |
+| loop-me | plan-critic (queue-plan review: solo Medium, panel Large; refuter per hunt finding) · logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); findings become the follow-up queue, executed under normal loop semantics; loop-me publishes the findings-only artifact report |
 
 **Standard report** (every dispatched agent returns): status (done / in-progress / blocked) ·
 changes with one-line purposes · evidence (real output, not claims) · traceability to criteria ·

@@ -39,8 +39,14 @@ packet**. Per the Autonomy Contract (`do-me/references/DISPATCH.md` §0, canonic
   gate, kept — but it parks the change instead of blocking the run on a prompt, and the rest of the
   pass proceeds. (On LGU systems this conservatism is deliberate: statutory/auth correctness outranks
   speed.) In `manual` mode the sweeping change stops for explicit human approval as before.
+- **Findings face a refuter before they're reported or fixed** (Medium/Large): each candidate
+  finding is handed to a plan-critic briefed to kill it — wrong scenario, already mitigated,
+  inflated severity, out of scope. Refuted findings appear one line each under the table as
+  "refuted", keeping the report honest without burying real Blockers under theater.
 - The **plan-critic** reviews the remediation plan on Medium/Large passes (advisory) in place of the
-  human sign-off; its `blocked-on-fact` parks are honored.
+  human sign-off — escalating to the **3-lens blind panel** when the remediation is sweeping
+  (auth-model rework, connection-string migration; §0 "Independent review panels"); its
+  `blocked-on-fact` parks are honored.
 - The §0 hard gates (authorization scope, no offensive tooling, secrets, DB apply, push) still bind —
   autonomy never crosses the defensive boundary or the authorization limit.
 

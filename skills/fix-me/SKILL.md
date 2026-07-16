@@ -38,6 +38,11 @@ little. Per the Autonomy Contract (`do-me/references/DISPATCH.md` §0, canonical
 - If the root-cause fix lands on a **protected path** (rate/penalty/interest/rounding/exemption code,
   or an assessment/collection migration), the fix is made and **staged but parked for human review**
   in the packet — not auto-committed.
+- **A Medium/Large diagnosis faces a refuter before hand-off:** when the root cause outgrows a
+  repair and the diagnosis document is about to be carried to `build-me` / `design-me` / `do-me`,
+  one plan-critic (refuter brief, §0) first tries to kill it — wrong layer, unproven causation,
+  evidence that doesn't support the sentence. A diagnosis that survives ships with the refuter's
+  note attached; one that dies goes back to isolation instead of misdirecting a build cycle.
 - **The safety stops below are §0 hard gates, not ceremony, and are unchanged:** never ship a
   speculative fix for an unreproducible bug; the regression test must be observed failing-before /
   passing-after; a fix that balloons into a redesign is a scope change — surface it and hand off.

@@ -34,8 +34,13 @@ Contract (`do-me/references/DISPATCH.md` §0, canonical — it overrides any old
 after intake you plan, allocate, verify, and **commit** the batch without prompting again, ending
 with one **review packet**. Specifically for this skill:
 
+- Every batch is a **run envelope** (§0 "Run lifecycle"): intake record first (run ID, pre-run SHA,
+  scope, budget, intake echo with resumed rows), one terminal state at the end, "stop" aborts to the
+  packet, and no counter → no loop (attempts, cycles, waves, dispatches all live in LOOP-STATE.md).
 - The Medium/Large pre-execution **human checkpoint becomes a plan-critic review** of the queue plan
-  (advisory); the queue proceeds without a user prompt. `manual` restores the human checkpoint.
+  (advisory) — a **3-lens blind panel** for Large batches or any queue touching protected paths (§0
+  "Independent review panels"); the queue proceeds without a user prompt. `manual` restores the
+  human checkpoint.
 - Routed skills run in **their own autonomous mode** — their plan gates are plan-critic reviews too,
   not user prompts. loop-me no longer waits on a routed skill's human gate (there isn't one in
   autonomous mode); it waits only on the routed skill *finishing*.
@@ -154,10 +159,11 @@ evidence-backed improvement findings shaped as routable concerns.
   touched. The hunt is one dispatch, not a cycle; it doesn't change the batch's tier.
 - **The hunt never reopens the accounting.** The queue's arithmetic is already settled; findings
   are *new* work, not retroactive failures against finished tasks.
-- **One bounded wave — defects only auto-develop (DISPATCH §0).** Only the hunter's reproducible
-  **defects** that tier Trivial/Small **and** sit on surfaces the batch already touched become a
-  **follow-up queue** and are executed under normal loop semantics (allocation, 3-attempt cap,
-  evidence-gated pass). **Everything else parks as a proposal** in the review packet: any
+- **One bounded wave — defects only auto-develop, refuted first (DISPATCH §0).** Each finding first
+  passes an adversarial **refuter** (plan-critic briefed to kill it); refuted findings are recorded,
+  never queued. Only surviving reproducible **defects** that tier Trivial/Small **and** sit on
+  surfaces the batch already touched become a **follow-up queue** and are executed under normal
+  loop semantics (allocation, 3-attempt cap, evidence-gated pass). **Everything else parks as a proposal** in the review packet: any
   improvement, anything Medium+, and anything needing a new noun (entity, table, page, integration,
   config surface). **The follow-up queue gets NO logic hunt of its own** — there is no second wave;
   findings produced during follow-up development park too. This is the hard stop that keeps one

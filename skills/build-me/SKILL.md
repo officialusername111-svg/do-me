@@ -165,10 +165,12 @@ one pass.
    and the acceptance criteria carried from BA. Medium/Large → write it to `PLAN.md` (+ `AUDIT.md` for
    brownfield findings).
 4. **Review gate (TL → plan-critic, or human in `manual`).** Check the plan against the rubric in
-   "Definition of done." In autonomous mode, Medium/Large plans go to the **plan-critic** for an
-   advisory review — its verdict and any `blocked-on-fact` parks replace the old human approval;
-   parked slices wait, the rest proceeds. In `manual` mode, Medium/Large stops here for human
-   approval before any code is written. Small/trivial proceeds.
+   "Definition of done." In autonomous mode, Medium plans go to the **plan-critic** for an advisory
+   review; **Large plans — and any plan touching protected paths or a statutory/money/PII rule —
+   convene the 3-lens blind panel** (correctness/statutory, security/data, simplicity/scope; §0
+   "Independent review panels"). Any panelist HALT halts; parks are unioned; splits are recorded in
+   the packet. Parked slices wait, the rest proceeds. In `manual` mode, Medium/Large stops here for
+   human approval before any code is written. Small/trivial proceeds.
 5. **Build (BD, possibly parallel).** Implement against the contract and acceptance criteria. Parallel
    workstreams only where the contract makes them genuinely independent. **BD may not modify, weaken,
    skip, or delete any existing test to reach green** — a failing pre-existing test is a defect to

@@ -28,7 +28,14 @@ one **review packet** at the end. Every former mid-run approval is governed by t
 Contract in `references/DISPATCH.md` §0** — read it; it is canonical and overrides any older gate
 wording in this file or the skills you route to. In brief, for this skill:
 
-- Plan/contract approval is replaced by an advisory **plan-critic** review (§0), not a user prompt.
+- Every run lives in a **run envelope** (§0 "Run lifecycle"): it starts only after the intake
+  record is written (run ID, pre-run SHA, scope statement, budget, intake echo; preconditions: no
+  unacknowledged `REVIEW-PENDING`, clean tree or run-ID-named stash) and ends in exactly one
+  terminal state (`done-green` / `done-parked` / `unresolved` / `aborted`). The human saying
+  **"stop"** aborts to the packet immediately. New work after the terminal state is a NEW run.
+- Plan/contract approval is replaced by an advisory **plan-critic** review (§0), not a user prompt —
+  escalating to a **3-lens blind panel** (correctness/statutory, security/data, simplicity/scope)
+  for Large tier or anything touching protected paths (§0 "Independent review panels").
 - A run that ends **GREEN** (§0's mechanical definition — executed tests pass, test-integrity clean,
   protected paths clean, no staged secret) auto-invokes `commit-me`. Protected-path and
   test-integrity failures **park for review**, they don't commit.
@@ -177,10 +184,12 @@ wrong for the user.
   no behavior changed (`commit-me`, `document-me`, `test-me`, `secure-me` routing). **An empty hunt
   is a fully successful hunt** — finding nothing to report is a valid, good outcome, never a reason
   to invent findings.
-- **Wave-1 discipline — one bounded wave, defects only (DISPATCH §0).** Auto-develop in this same
-  run **only** the hunter's reproducible **defects** (they violate criteria a human already set),
-  and only where they tier Trivial/Small **and** sit on a surface the original intake already
-  touched — route those to `fix-me`. **Everything else parks as a proposal in the review packet**,
+- **Wave-1 discipline — one bounded wave, defects only, refuted first (DISPATCH §0).** On Medium+
+  runs, each hunter finding first passes an adversarial **refuter** (a plan-critic briefed to kill
+  it) — a finding that dies under refutation is recorded as refuted, never developed. Survivors
+  auto-develop in this same run **only** if they are reproducible **defects** (they violate
+  criteria a human already set), tier Trivial/Small, **and** sit on a surface the original intake
+  already touched — route those to `fix-me`. **Everything else parks as a proposal in the review packet**,
   not developed: any improvement/gap, anything Medium+, and anything that needs a *new noun* (a new
   entity, table, page, integration, or config surface). Before routing any finding, confirm it
   traces to the intake's stated scope — a finding that grows the task is a proposal, not wave-1

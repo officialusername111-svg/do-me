@@ -38,6 +38,12 @@ generating an idempotent migration **script** (not applying it), a Release **bui
 shippability. Everything that reaches an environment waits for the human. `/do-me manual` changes
 nothing about ship-me.
 
+One §0 pattern does apply here: **the runbook faces the 3-lens blind panel before the human sees
+it** (correctness/statutory, security/data, simplicity/scope — §0 "Independent review panels").
+The panel cannot approve a deploy — only the human can — but it catches a wrong rollback step, a
+secret in a runbook line, or an over-built procedure *before* the human spends their approval on a
+flawed document. Panel findings are fixed or noted in the runbook the human reviews.
+
 ## Hard safety rules — non-negotiable at every tier
 
 These bind Trivial work and hotfixes exactly as hard as a Large release. There is no tier low

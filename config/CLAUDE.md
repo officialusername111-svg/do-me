@@ -7,7 +7,10 @@ project-specific settings (e.g., extra permission grants in `settings.local.json
 
 ## Autonomy — fire-and-forget by default
 The -me family runs autonomously: after you state a task, it works to a finished, committed result
-and gives you ONE review packet at the end — no mid-run approval prompts. Safety is enforced
+and gives you ONE review packet at the end — no mid-run approval prompts. Every run lives in a run
+envelope with a formal start (intake record + budget) and a guaranteed end (one of four terminal
+states) — saying "stop" aborts any run immediately to its packet. High-stakes plans face a 3-lens
+blind reviewer panel; findings face a refuter before they become work (DISPATCH.md §0). Safety is enforced
 mechanically during the run (a mechanical GREEN commit gate, ASK-tier permissions for
 destructive/DB/publish/push, a staged-secret guard, protected-path parking, blocked-on-fact typing,
 run-ID revert) and reviewed once after. The canonical policy is `§0` of
