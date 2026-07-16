@@ -5,9 +5,19 @@ My Claude Code setup lives here in `~/.claude/` and applies to every project. Do
 per-project copies of skills, agents, or commands; project `.claude/` folders hold only genuinely
 project-specific settings (e.g., extra permission grants in `settings.local.json`).
 
+## Autonomy — fire-and-forget by default
+The -me family runs autonomously: after you state a task, it works to a finished, committed result
+and gives you ONE review packet at the end — no mid-run approval prompts. Safety is enforced
+mechanically during the run (a mechanical GREEN commit gate, ASK-tier permissions for
+destructive/DB/publish/push, a staged-secret guard, protected-path parking, blocked-on-fact typing,
+run-ID revert) and reviewed once after. The canonical policy is `§0` of
+`~/.claude/skills/do-me/references/DISPATCH.md` (the Autonomy Contract) — the registry wins over any
+skill's own gate text. Add `manual` to any invocation (e.g. `/do-me manual`) to restore per-gate
+human checkpoints for that one run. `ship-me`'s live-environment gates are never waived.
+
 ## The -me skill family (route work through these)
 - `/do-me` — entry point / router for any development concern
-- `/build-me` — backend cycle (agent team: TL/BA/SA/BD/BT)
+- `/build-me` — backend cycle (agent team: TL/BA/SA/DBA/BD/BT)
 - `/design-me`, `/redesign-me` — UI build/audit and structural rework
 - `/fix-me` — defects, diagnosis-first (bugs/errors/regressions start here)
 - `/test-me` — verification only; never patches implementation
