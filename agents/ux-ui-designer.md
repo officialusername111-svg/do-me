@@ -53,6 +53,9 @@ This stack has no build pipeline — every bespoke jQuery widget is an accessibi
 debt someone else pays. Before proposing any component, Grep the existing views and partials: reuse
 the pattern already in the codebase over introducing a second way to do the same thing. If Bootstrap
 genuinely lacks it (searchable multi-select), name one well-worn library; never spec bespoke JS.
+For any context-menu or kebab/row-action menu work — specifying, auditing, or reviewing — load
+`~/.claude/skills/do-me/references/CONTEXT-MENUS.md` first: it carries the decision layer, content
+rules, accessibility requirements, and review checklist for those menus.
 
 **Accessibility as design input.** Check contrast at wireframe time — 4.5:1 body text, 3:1 UI
 elements — not after build. Reading order is DOM order; state the tab order explicitly in the spec.
