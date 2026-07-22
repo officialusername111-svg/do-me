@@ -112,6 +112,45 @@ verify cycles (3), enforcer cycles (3), findings waves (1), panel size (3), glob
 you are in an unbounded loop — stop, add the counter or end the run as `unresolved`. The watchdog
 (no state transition for N minutes → abort to packet) backstops everything above.
 
+### Dispatch economy — kill the cold-start tax
+
+Every dispatch pays a cold-start tax: a fresh agent with zero memory re-reading the project before
+it does anything. Six dispatches × a few minutes of re-reading is half a run's time and tokens.
+Three rules eliminate most of it:
+
+**1. Explore once, brief everyone — the RUN-BRIEF.** The orchestrating skill reads the project
+**once** at intake and distills a compact brief (a `## Run Brief` section of PLAN.md, or an inline
+block for Small runs): the stack in one line, the conventions that bind (naming, data access,
+validation patterns — with one example file each), the **surface map** (the exact files this run
+touches, one line each on what they are), the frozen contract, and the acceptance criteria. Every
+dispatch packet **embeds or points at the brief**, and briefed agents follow the reading rule:
+**read the brief's files first; explore beyond them only when a named symbol isn't where the brief
+says** — never a whole-repo sweep to re-derive what the brief already states. Exception: the
+plan-critic's information asymmetry stands — it gets the brief's *facts* (stack, file list), never
+the planner's rationale or framing.
+
+**2. Fuse roles below Large.** Separate agents exist for separate judgment, not for ceremony:
+- **Trivial:** zero dispatches. The orchestrating session routes, fixes, self-checks, and reports
+  inline — including the logic hunt (apply the hunter's gap taxonomy directly; don't dispatch it
+  for a one-line change).
+- **Small:** at most 2 dispatches — one builder, one tester. BA/SA-style discovery is done inline
+  by the orchestrator; the hunt is inline too.
+- **Medium:** fuse BA+SA into one discovery dispatch; solo plan-critic; builder(s); tester;
+  dispatched hunt. Typical total ≤ 5.
+- **Large / protected:** the full bench and the 3-lens panel — depth is what this tier buys.
+**Never fused, at any tier:** the tester with the builder (the GREEN oracle must be independent),
+and the critic/panel with anyone (blindness is its value).
+
+**3. Continue agents; don't resurrect them.** Within a run, a verify-fix cycle goes back to the
+**same builder agent as a continuation** (the harness can send follow-up messages to a live
+agent) — it already holds the brief, the code, and its own reasoning; a fresh dispatch re-pays the
+whole tax to re-learn what it just wrote. Fresh dispatches are for fresh *judgment* (a new lens, an
+unbiased retry after a failed hypothesis — loop-me's changed-hypothesis reattempts stay fresh on
+purpose). Every continuation still counts against the run budget.
+
+The run budget (default 40) is a ceiling, not a target — a Medium run that spends 12 dispatches
+where 5 would do has a finding-worthy efficiency defect even though it's "within budget."
+
 ### GREEN — the mechanical commit gate (a run may auto-commit only if ALL hold)
 
 1. Build succeeds **and** the relevant tests were **executed** (not merely present). No test
@@ -219,10 +258,19 @@ user → do-me (routes) → skill (process, gates, user contact) → agent (craf
 changes with one-line purposes · evidence (real output, not claims) · traceability to criteria ·
 assumptions taken + open questions for the skill to escalate · out-of-scope proposals, separated.
 
+**Standard packet prefix** (every dispatch, all skills): the **RUN-BRIEF** (§0 "Dispatch economy")
+— stack line, binding conventions, surface map, contract, criteria — plus the reading rule: brief's
+files first, no whole-repo re-exploration. The plan-critic receives the brief's facts only, never
+rationale.
+
 ## Rules that bind every dispatch
 
 1. **Headless**: agents cannot ask the user anything mid-task. Ambiguity → resolve from repo, or
    take the safest reversible option, record the assumption, return the open question.
+   **Briefed, not exploring**: when the packet carries a RUN-BRIEF, start from its surface map and
+   read those files — explore beyond it only when a named symbol isn't where the brief says. A
+   whole-repo sweep to re-derive what the brief states is the cold-start tax the brief exists to
+   kill (§0 "Dispatch economy").
 2. **Testers are read-only toward implementation code** — they write/edit tests only; defects are
    findings, never patches. **Reciprocally, developer agents may not modify or delete existing
    tests during their attempts** — a failing pre-existing test is a finding to fix in

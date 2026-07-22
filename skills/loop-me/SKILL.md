@@ -118,7 +118,10 @@ the table was drawn. Gauge the batch before building anything:
      already does.
    On a reattempt, hand the routed skill the prior attempt's failure findings and the changed
    hypothesis. Record the route in state. You classify and hand off — you never do the domain work
-   yourself.
+   yourself. **One brief for the whole batch (§0 "Dispatch economy"):** write the RUN-BRIEF once at
+   batch intake — stack, conventions, the surface map of everything the queue touches — and hand
+   each routed skill the shared brief plus only its item's delta; a 6-item batch must not pay the
+   project-reading tax 6 times.
 4. **Development.** The routed skill does the work in **its own autonomous mode** (§0) — its plan
    gate is a plan-critic review, not a user prompt, so the loop never blocks on a human mid-concern.
    In `manual` mode the routed skill's human checkpoints are honored and the loop waits on them.

@@ -84,16 +84,25 @@ the most the roster can do.
 - **Data:** read-only, or schema/migration/transaction changes with integrity and concurrency stakes?
 - **Risk & reach:** internal rarely-touched CRUD, or a high-traffic, money- or compliance-sensitive path?
 
-**Match the team and process to the tier:**
+**Match the team and process to the tier — and pay the cold-start tax once (§0 "Dispatch
+economy"):** read the project once at intake, write the **RUN-BRIEF** (stack line, binding
+conventions, surface map, contract, criteria), and embed it in every dispatch packet so no agent
+re-explores what you already read.
 
-- **Trivial** (a typo, a null guard, a single obviously-correct line): TL + BD. No BA, no SA, no plan
-  file. Make the fix, BT-equivalent self-check, report. Do not summon the team.
-- **Small** (one endpoint, one query optimization, one isolated rule with no schema change): TL + BD +
-  BT. Add **SA** only if the data layer or a contract changes; add **DBA** only if a table, index, or
-  migration changes; add **BA** only if a business rule is in play. In-thread checklist, not a `PLAN.md`.
-- **Medium / Large** (new feature, multi-table change, cross-cutting concern, anything compliance- or
-  money-sensitive): the full cycle and full roster, a written `PLAN.md`, the review gate, and the
-  human approval checkpoint.
+- **Trivial** (a typo, a null guard, a single obviously-correct line): **zero dispatches** — you
+  (TL) make the fix inline, self-check, apply the hunt taxonomy yourself, report. Do not summon
+  anyone.
+- **Small** (one endpoint, one query optimization, one isolated rule with no schema change): **at
+  most 2 dispatches** — BD + BT. You do the BA/SA-style discovery inline; the hunt is inline too.
+  In-thread checklist, not a `PLAN.md`.
+- **Medium** (new feature, multi-table change): **BA+SA fused into one discovery dispatch**, DBA
+  only if schema changes, solo plan-critic at the gate, BD, BT — typically ≤ 5 dispatches, written
+  `PLAN.md`.
+- **Large / protected-path / money-sensitive**: the full separate roster, the 3-lens panel, full
+  `PLAN.md` — depth is what this tier buys.
+- **Verify-fix cycles continue the same BD agent** (follow-up message, not a fresh dispatch) — it
+  already holds the brief and its own code; only a changed-hypothesis retry earns a fresh agent.
+  BT is never fused with BD, at any tier — the GREEN oracle stays independent.
 
 **Anti-over-engineering rules (these bind every tier):**
 

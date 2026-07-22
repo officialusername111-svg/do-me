@@ -109,7 +109,11 @@ those skills themselves (see their "Pairs well with" section) for aesthetic dire
 roles the tier earns (it skips BA/SA on work that doesn't need them).
 
 **Trivial, either domain** → don't route into a cycle at all. Make the fix directly (or the single
-relevant skill in its lightest mode), self-check, report. No agents, no plan, no ceremony.
+relevant skill in its lightest mode), self-check, report. No agents, no plan, no ceremony — and the
+Step-4 logic hunt is applied **inline** (use the hunter's gap taxonomy yourself; zero dispatches
+for a trivial change, per §0 "Dispatch economy"). On any routed run, write the **RUN-BRIEF** once
+at intake and pass it down — the routed skill and its agents read your brief instead of
+re-exploring the repo.
 
 **Lifecycle concerns** → thin pass-through, no coordination layer: a defect report → `fix-me`; "test
 / verify / prove it works" → `test-me`; "security check / harden / is this safe" → `secure-me`;
