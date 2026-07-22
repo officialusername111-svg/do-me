@@ -30,7 +30,10 @@ wording in this file or the skills you route to. In brief, for this skill:
 
 - Every run lives in a **run envelope** (§0 "Run lifecycle"): it starts only after the intake
   record is written (run ID, pre-run SHA, scope statement, budget, intake echo; preconditions: no
-  unacknowledged `REVIEW-PENDING`, clean tree or run-ID-named stash) and ends in exactly one
+  unacknowledged `REVIEW-PENDING`, clean tree or run-ID-named stash, and **no crashed-run
+  leftovers** — HEAD on an `auto/<id>` branch, a non-terminal `## Run State`, or a run-ID stash
+  means a previous run died: surface resume / abandon / park options, never stash over it) and
+  ends in exactly one
   terminal state (`done-green` / `done-parked` / `unresolved` / `aborted`). The human saying
   **"stop"** aborts to the packet immediately. New work after the terminal state is a NEW run.
 - Plan/contract approval is replaced by an advisory **plan-critic** review (§0), not a user prompt —
@@ -54,7 +57,7 @@ You sit above the build skills and never duplicate them:
   accessibility-checked, production code — so they *are* the frontend build path.
 - **`build-me`** — all backend work, run through a right-sized agent cycle (TL / BA / SA / BD / BT).
 
-Six lifecycle skills sit **beside** you, not below you — route to them when the concern is theirs,
+Seven lifecycle skills sit **beside** you, not below you — route to them when the concern is theirs,
 and receive work back from them:
 
 - **`fix-me`** — owns defect reports (bugs, errors, regressions) end to end, diagnosis-first. A defect
@@ -69,6 +72,9 @@ and receive work back from them:
   config, IIS/on-prem targets. It gates live environments on explicit per-conversation approval.
 - **`document-me`** — owns documentation derived from actual shipped behavior: README, end-user
   guides, release notes, GLOSSARY.md.
+- **`clean-me`** — owns workspace hygiene: provable junk removed (build output, stale run state,
+  spent `auto/` branches), doubtful items parked for the human, every action ledgered in
+  CLEAN-HISTORY.md. Autonomous runs are what leave this debris behind — route the sweep here.
 
 ## Step 1 — Classify the concern
 
@@ -118,8 +124,8 @@ re-exploring the repo.
 **Lifecycle concerns** → thin pass-through, no coordination layer: a defect report → `fix-me`; "test
 / verify / prove it works" → `test-me`; "security check / harden / is this safe" → `secure-me`;
 "commit / save my work / checkpoint" → `commit-me`; "deploy / publish / release / runbook" →
-`ship-me`; "document / README / user guide / release notes" → `document-me`. These skills
-right-size themselves.
+`ship-me`; "document / README / user guide / release notes" → `document-me`; "clean this up /
+remove unused files / tidy the repo" → `clean-me`. These skills right-size themselves.
 
 **A batch of multiple concerns** ("work through this list", "process the backlog") → `loop-me`. It
 owns the queue, the 3-attempt cap, and the state handoff (`LOOP-STATE.md`), allocating per item —
@@ -131,10 +137,11 @@ owns the queue, the 3-attempt cap, and the state handoff (`LOOP-STATE.md`), allo
 user → do-me (routes) → skill (process, gates, user contact) → agent (craft, headless)
 ```
 
-Never skip down (you and `loop-me` route to **skills**, never to agents directly — with one
-registry-sanctioned exception: the post-run `logical-hunter` dispatch in Step 4), never up (agents
-never invoke skills or contact the user), never sideways (a routed skill finishes and recommends —
-it doesn't re-route mid-run).
+Never skip down (you and `loop-me` route to **skills**, never to agents directly — with two
+registry-sanctioned exceptions: the **plan-critic** reviews, panels, and refuters in Steps 3–4,
+and the post-run `logical-hunter` dispatch in Step 4), never up (agents never invoke skills or
+contact the user), never sideways (a routed skill finishes and recommends — it doesn't re-route
+mid-run).
 
 Which skill dispatches which specialists, with what briefing packet and return shape, is defined in
 **exactly one place**: `references/DISPATCH.md` — the canonical registry. Consult it when routing
@@ -175,7 +182,8 @@ rather than an abstract DTO list.
 ## Step 4 — The logic hunt (every run that changed behavior)
 
 When the routed or coordinated work reports done, dispatch the **logical-hunter** agent (per
-DISPATCH.md — the sole agent this skill dispatches directly) with the run scope: the delivered
+DISPATCH.md — one of the two agents this skill dispatches directly, beside the plan-critic) with
+the run scope: the delivered
 concern(s), the surfaces touched, acceptance criteria / spec pointers, and how to run the app. It
 sweeps the delivery's **blast radius** — not the whole app — for logical gaps nobody scoped:
 interaction asymmetries (the same user intent through two paths behaving differently), incomplete

@@ -103,7 +103,7 @@ the table was drawn. Gauge the batch before building anything:
    queue plan (autonomous), or **stop for the human checkpoint** in `manual` mode — present the queue
    with tiers and proposed order for reorder/drop before anything executes. The critic's
    `blocked-on-fact` parks (a concern hinging on a statutory/money/PII fact absent from the repo) are
-   marked and skipped, not guessed. A dropped item is marked `dropped` with a one-line note — it
+   marked `blocked` and skipped, not guessed. A dropped item is marked `dropped` with a one-line note — it
    stays in the accounting; it is never silently erased.
 3. **Allocation — `build-me` is the main path.** Mark the task `active` and **increment its
    attempt counter now, at allocation** — an attempt is counted when it starts, so a crashed
@@ -150,9 +150,9 @@ the table was drawn. Gauge the batch before building anything:
 
 ## The logic hunt — after the queue, before the report
 
-Once **every** queue row is terminal (`passed` / `unresolved` / `dropped`), dispatch the
-**logical-hunter** agent (per DISPATCH.md — the sole agent this skill dispatches directly) with the
-batch scope: the terminal queue with its concern statements, the surfaces the batch touched, any
+Once **every** queue row is terminal (`passed` / `unresolved` / `dropped` / `blocked`), dispatch
+the **logical-hunter** agent (per DISPATCH.md — one of the two agents this skill dispatches
+directly, beside the plan-critic) with the batch scope: the terminal queue with its concern statements, the surfaces the batch touched, any
 criteria/spec pointers, and how to run the app. It sweeps the batch's **blast radius** for logical
 gaps nobody scoped — interaction asymmetries, incomplete state machines, implied-but-missing
 consequences, cross-task incoherence (the gap only a *batch* can create) — and returns ranked,
@@ -185,8 +185,9 @@ evidence-backed improvement findings shaped as routable concerns.
   findings and a changed hypothesis — a different approach, a different layer, a revised
   diagnosis, or a different specialist.
 - **Never silently drop a task.** Every task that entered the queue appears in the final report
-  as `passed`, `unresolved`, or `dropped` (human-removed at the checkpoint, with the note). The
-  accounting must balance: N queued = N passed + N unresolved + N dropped.
+  as `passed`, `unresolved`, `dropped` (human-removed at the checkpoint, with the note), or
+  `blocked` (parked `blocked-on-fact` with its exact question). The accounting must balance:
+  N queued = N passed + N unresolved + N dropped + N blocked.
 - **State is updated at every transition, not at the end.** A crashed or interrupted session must
   be resumable from `LOOP-STATE.md` alone — queue status, attempts spent, and the findings the
   next attempt needs are all in the file before the next step runs.
@@ -199,13 +200,17 @@ up where the last left off. Produce it in exactly this shape:
 ```markdown
 # LOOP-STATE — batch: dashboard cleanup (started 2026-07-02)
 
+## Run
+- Run ID: loop-2026-07-02-a · Pre-run HEAD: 4f2a9c1
+- Budget: dispatches 7/40 · wall-clock ceiling 4h
+
 ## Queue
-| ID | Concern                                      | Tier   | Route       | Attempts | Status     |
-|----|----------------------------------------------|--------|-------------|----------|------------|
-| T1 | Incoming-document count wrong on dashboard   | Small  | fix-me      | 1/3      | passed     |
-| T2 | Add "released" status to document lifecycle  | Medium | build-me    | 2/3      | active     |
-| T3 | Reshuffle the reports page layout            | Medium | redesign-me | 0/3      | queued     |
-| T4 | Export queue to PDF                          | Small  | —           | 0/3      | dropped    |
+| ID | Concern                                      | Tier   | Route       | Provenance  | Attempts | Status     |
+|----|----------------------------------------------|--------|-------------|-------------|----------|------------|
+| T1 | Incoming-document count wrong on dashboard   | Small  | fix-me      | user-intake | 1/3      | passed     |
+| T2 | Add "released" status to document lifecycle  | Medium | build-me    | user-intake | 2/3      | active     |
+| T3 | Reshuffle the reports page layout            | Medium | redesign-me | user-intake | 0/3      | queued     |
+| T4 | Export queue to PDF                          | Small  | —           | user-intake | 0/3      | dropped    |
 
 ## Attempt log
 
@@ -220,10 +225,12 @@ up where the last left off. Produce it in exactly this shape:
 - Out of scope for this batch per the human (2026-07-02); revisit after the reports rework.
 ```
 
-Statuses: `queued` | `active` | `passed` | `unresolved` | `dropped`. `Attempts n/3` counts
-attempts *started* — `active 2/3` means attempt 2 is in progress; a first-try success reads
-`passed 1/3`. Small batches keep the same queue table in-thread instead of a file; the columns
-and statuses are identical.
+Statuses: `queued` | `active` | `passed` | `unresolved` | `dropped` | `blocked` (`blocked` = a
+`blocked-on-fact` park awaiting the human's answer — it is terminal for this run). `Provenance` is
+the §0 instruction-source tag: `user-intake` rows auto-execute on resume; `agent-derived` /
+`external-content-derived` rows do not. `Attempts n/3` counts attempts *started* — `active 2/3`
+means attempt 2 is in progress; a first-try success reads `passed 1/3`. Small batches keep the
+same queue table in-thread instead of a file; the columns and statuses are identical.
 
 ## Required output contract — the batch report
 
@@ -231,8 +238,8 @@ Structure the deliverable in these sections, in order. Right-size the prose, but
 section silently.
 
 ### 1. Queue accounting
-N queued / N passed / N unresolved / N dropped — and the arithmetic must balance. If it doesn't,
-the run is not done.
+N queued / N passed / N unresolved / N dropped / N blocked — and the arithmetic must balance. If
+it doesn't, the run is not done.
 
 ### 2. Per-task results
 One line per task: id, concern, status, attempts used, route taken, and an evidence pointer (the
@@ -259,7 +266,8 @@ render it as an `artifact-design` page. If the hunt found nothing, say so in-thr
 ## Definition of done — self-check before responding
 
 - [ ] **Right-sized**: no queue machinery for 1–2 concerns; no state file for a single-session
-      batch; Medium/Large got the file and the pre-execution human checkpoint.
+      batch; Medium/Large got the file and the pre-execution queue-plan review (plan-critic in
+      autonomous mode; human checkpoint in `manual`).
 - [ ] Resumed an existing `LOOP-STATE.md` if one had queued/active tasks — didn't start over.
 - [ ] Allocation followed the main-path rule: `build-me` for development concerns, `design-me` /
       `redesign-me` for UI-only, `fix-me` for defects, `do-me` for genuinely mixed — no domain
@@ -277,15 +285,14 @@ render it as an `artifact-design` page. If the hunt found nothing, say so in-thr
       skills ran autonomously; the batch committed only if GREEN (§0), landed by run ID, ending with
       a review packet and `REVIEW-PENDING` marker. `manual` mode: routed skills' human gates honored.
       Never pushed or deployed either way.
-- [ ] Queue accounting balances: every task that entered appears as `passed`, `unresolved`, or
-      `dropped`.
+- [ ] Queue accounting balances: every task that entered appears as `passed`, `unresolved`,
+      `dropped`, or `blocked`.
 - [ ] Batch report has all five sections; the unresolved section follows the required shape.
 - [ ] Logic hunt dispatched after the queue went terminal — every run, every tier; every finding
-      executed through the follow-up queue to a terminal state (developed / unresolved /
-      fix-me-routed), none silently dropped.
-- [ ] Hunt outcome in the review packet: only in-scope Trivial/Small defects auto-developed in the
-      follow-up wave, everything else parked as a proposal, the follow-up queue got no second hunt —
-      or "hunt found nothing" stated. (`manual` mode may also publish the findings artifact.)
+      accounted for: refuted, parked as a proposal, or (only surviving in-scope Trivial/Small
+      defects) executed through the follow-up queue to a terminal state; the follow-up queue got
+      no second hunt; none silently dropped — or "hunt found nothing" stated. (`manual` mode may
+      also publish the findings artifact.)
 
 ## Pairs well with
 
@@ -297,8 +304,9 @@ render it as an `artifact-design` page. If the hunt found nothing, say so in-thr
 - `do-me` — coordinates the genuinely mixed FE+BE concerns (contract-first) inside a queue slot.
 - `test-me` — the pass gate: its pass/fail matrix is the evidence the Pass? decision runs on.
 - `logical-hunter` (agent) — the post-queue logic hunt: sweeps the batch's blast radius for
-  unscoped logical gaps; its findings become the auto-executed follow-up queue and the artifact
-  hunt report; the sole agent this skill dispatches directly (per DISPATCH.md).
+  unscoped logical gaps; its surviving in-scope Trivial/Small defects become the follow-up queue,
+  everything else parks as a proposal in the review packet (artifact only in `manual` mode); one
+  of the two agents this skill dispatches directly, beside the plan-critic (per DISPATCH.md).
 - `commit-me` — the explicit close-out for a finished batch; loop-me stages, commit-me commits.
 - `superpowers:subagent-driven-development` (if installed) — run each attempt in a fresh subagent
   with `LOOP-STATE.md` as the handoff artifact, so no attempt inherits a stale mental model.

@@ -10,7 +10,9 @@ The default operating mode of the whole -me family is **fire-and-forget, review 
 after the user states the task at intake, **no skill contacts the user again until the final
 report**. Every former mid-run human gate is replaced by *mechanical enforcement during the run*
 plus *one structured review after it* — never by a mid-run prompt. Where a skill's own text still
-says "stop for human approval," this section overrides it (registry wins).
+says "stop for human approval," this section overrides it (registry wins). **Within this file too,
+§0 wins over any later section**: if a registry row or Rule below disagrees with §0, the later text
+is stale — follow §0 and fix the other text.
 
 `/do-me manual` (or `manual` passed to any -me skill) restores the old per-gate checkpoint
 behavior for that one run. Autonomy is the default; ceremony is the opt-in.
@@ -87,6 +89,14 @@ rows with their provenance tags). Preconditions checked at start:
 2. **Clean working tree**, or the human's uncommitted work is stashed under a run-ID-named stash
    that MUST be restored and reported in the packet. Never silently mix a run's changes with the
    human's work-in-progress.
+3. **No crashed-run leftovers.** A crash (power cut, killed session, token exhaustion) writes no
+   marker and no terminal state — so check for its debris explicitly: HEAD on an `auto/<id>`
+   branch, a PLAN.md / LOOP-STATE.md `## Run State` showing a run with no terminal state, or a
+   run-ID-named stash in `git stash list`. Any of these → do **NOT** stash or clean anything;
+   surface it to the human with three options: **resume** from the Run State journal, **abandon**
+   (reset the auto branch, restore the stash, write a retroactive `aborted` packet), or **park**.
+   Only a repo that passes this check may start a new envelope — a dead run's half-work must never
+   be entombed as if it were the human's WIP.
 
 **END — every run terminates in exactly one of four states, and cannot continue past it:**
 
@@ -99,7 +109,11 @@ rows with their provenance tags). Preconditions checked at start:
 
 New work discovered at or after the terminal state — a parked proposal, a new idea, a wave-2
 finding — is **a new run with a new ID, a fresh budget, and its own intake record**, started only
-after the previous packet is acknowledged. Runs never chain themselves.
+after the previous packet is acknowledged. Runs never chain themselves. This applies to skill
+hand-offs too: a `fix-me` diagnosis that outgrows a repair **ends its run `done-parked`** — the
+packet carries the surviving diagnosis document plus a ready-to-paste intake block for the
+follow-on `build-me` / `design-me` / `do-me` run. (Inside a `loop-me` batch, the loop's own
+reallocation path covers the hand-off instead.)
 
 **The stop command.** The human saying "stop" (or "abort", "halt") at any point is an immediate
 `aborted` terminal: finish the tool call in flight, journal state, write the packet. Never argue,
@@ -109,8 +123,13 @@ never "just finish this one thing."
 a named cap and a counter that lives in the run's state, updated per iteration: attempts (3/item),
 verify cycles (3), enforcer cycles (3), findings waves (1), panel size (3), global dispatches
 (budget). If you are about to repeat something and cannot point at its counter in the state file,
-you are in an unbounded loop — stop, add the counter or end the run as `unresolved`. The watchdog
-(no state transition for N minutes → abort to packet) backstops everything above.
+you are in an unbounded loop — stop, add the counter or end the run as `unresolved`. The dispatch
+budget is also enforced mechanically by the `count-dispatches` PreToolUse hook, which refuses the
+dispatch after the cap — the PLAN.md counter is the plan; the hook is the wall. The watchdog is
+honest about what it is: **the human's lever, not a background process** — a run that shows no
+state transition for **30 minutes** is presumed hung, and the human saying "stop" aborts it to its
+packet; the orchestrator additionally checks the wall-clock ceiling at every state transition and
+aborts to packet when it is exceeded.
 
 ### Dispatch economy — kill the cold-start tax
 
@@ -196,7 +215,15 @@ where 5 would do has a finding-worthy efficiency defect even though it's "within
 - The **decision trail is durable and write-ahead**: an append-only `docs/agent-runs/<run-id>.md`
   records the plan snapshot, every decision/assumption **before** the tool calls it authorizes, the
   test-evidence summary, and the SHAs produced. It is committed **in the same run** as the code.
-  `git commit --amend`, rebase, and filter-branch are ASK-tier so history stays tamper-evident.
+  `git commit --amend`, rebase, and filter-branch are ASK-tier so history stays tamper-evident
+  (flag-order forms like `git commit -a --amend` are caught by the `guard-green` hook, since
+  prefix permission rules cannot see them).
+- **Every terminal state commits the run record — including `aborted`, `unresolved`, and
+  GREEN-blocked runs.** The failed runs are exactly the ones an auditor or future-you most needs.
+  The record plus one appended line in `docs/agent-runs/INDEX.md` (run ID · date · terminal state ·
+  merge/revert SHA or "no commit") goes in as a **docs-only commit exempt from GREEN** — it
+  contains no product code; the secret guard still applies. Past runs must be observable without
+  session-transcript archaeology.
 
 ### The instruction-source boundary (holds even in fire-and-forget)
 
@@ -215,7 +242,8 @@ echoed in the intake summary the human sees before the run goes dark.
   remaining parks and the run ends with its report.
 - **Gate-hit = park, never hang.** Hitting any ASK-tier need mid-run parks that concern with the
   blocked command recorded and continues — a skill must never sit waiting on a prompt in an empty
-  room. A **watchdog** ends a run that goes N minutes with no state transition, straight to report.
+  room. The 30-minute no-transition rule (§ Run lifecycle) is the hang backstop: the orchestrator
+  checks the wall-clock ceiling at each transition; a run gone silent is the human's "stop" call.
 - **Single-writer state.** Only the orchestrating session writes PLAN.md / LOOP-STATE.md / run
   records; worktree subagents return report shapes and never touch state files. All state files are
   gitignored (except the committed run record). Worktree merge-backs are serialized `--ff-only`
@@ -228,10 +256,15 @@ test-integrity delta since intake, all logged assumptions, all `blocked-on-fact`
 any protected-path demotions, links to the run record. **The packet — and every -me skill's final
 report or reply — is written in plain language per the `tell-me` skill** (load it before writing):
 outcome first, everyday words, the reader's one question asked directly, exact technical detail
-kept precise under a final "Details" section. A **`REVIEW-PENDING`** marker is written;
-`do-me` / `loop-me` **refuse to start a new autonomous run on that repo while an unacknowledged
-marker exists**. In autonomous mode, do **not** publish prototypes/artifacts externally — put
-screenshots of the *real* built UI in the packet instead.
+kept precise under a final "Details" section. A **`REVIEW-PENDING.md`** marker is written **at the
+repo root** (gitignored — the first run in a repo appends it and the state-file names to
+`.gitignore`), containing the run ID, date, terminal state, and the exact revert command.
+**Acknowledgment is mechanical, and only the human can give it:** the human deletes the marker
+themselves, or explicitly says "reviewed <run-id>" — only then may Claude delete it, never on
+its own initiative; a stale-looking marker is still unacknowledged. `do-me` / `loop-me` **refuse to
+start a new autonomous run on that repo while an unacknowledged marker exists**. In autonomous
+mode, do **not** publish prototypes/artifacts externally — put screenshots of the *real* built UI
+in the packet instead.
 
 ### Hard gates that survive (closed list — everything not here runs autonomously)
 
@@ -250,9 +283,10 @@ user → do-me (routes) → skill (process, gates, user contact) → agent (craf
 ```
 
 - **Never skip down**: do-me and loop-me never dispatch agents directly; they route to skills.
-  **Sole exception — logical-hunter**: both dispatch it at run close-out for the post-run logic
-  hunt. It does no domain work and never patches, so the rule this bullet protects (domain work
-  flows through skills) stays intact.
+  **Two registry-sanctioned exceptions**: (1) **review agents** — the plan-critic as solo critic,
+  panel member, or per-finding refuter (advisory judgment, never domain work); (2) the post-run
+  **logical-hunter** dispatch at close-out. Neither does domain work and neither patches, so the
+  rule this bullet protects (domain work flows through skills) stays intact.
 - **Never skip up**: agents never invoke skills and never contact the user.
 - **Never sideways mid-run**: a skill finishes its cycle and recommends; it does not re-route.
 - The user may invoke any domain skill directly when the domain is obvious — that is the user doing
@@ -271,8 +305,15 @@ user → do-me (routes) → skill (process, gates, user contact) → agent (craf
 | document-me | technical-writer | human-approved outline (Medium/Large), audience per artifact, the code surfaces to verify against | the artifacts + verification notes |
 | commit-me | — (no bench; works the tree directly) | — | — |
 | clean-me | — (no bench; works the tree directly; Tier-C parks go to the human, staged removals hand off to commit-me) | — | — |
-| do-me | plan-critic (solo Medium; 3-lens panel Large/protected; refuter per hunt finding) · logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement findings as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached; do-me develops them and publishes the findings-only artifact report |
-| loop-me | plan-critic (queue-plan review: solo Medium, panel Large; refuter per hunt finding) · logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); findings become the follow-up queue, executed under normal loop semantics; loop-me publishes the findings-only artifact report |
+| do-me | plan-critic (solo Medium; 3-lens panel Large/protected; refuter per hunt finding) · logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement findings as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached; disposition per §0's bounded wave — surviving in-scope Trivial/Small defects develop via fix-me, everything else parks as a proposal in the review packet; artifact only in `manual` mode |
+| loop-me | plan-critic (queue-plan review: solo Medium, panel Large; refuter per hunt finding) · logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); only surviving in-scope Trivial/Small defects enter the follow-up queue (normal loop semantics, no second hunt), everything else parks as a proposal in the review packet; artifact only in `manual` mode |
+
+**Model policy** (recorded here so drift is a registry violation): judgment-critical reviewer
+roles run on the **same class of model as the builders they review** — `plan-critic` and
+`security-skeptic` are `opus`, matching team-leader / system-analyst / backend-developer /
+security-tester. The reviewer that replaced the human approval gate must never be outgunned by the
+planner it reviews; downgrading any reviewer below the planners requires editing this paragraph
+first.
 
 **Standard report** (every dispatched agent returns): status (done / in-progress / blocked) ·
 changes with one-line purposes · evidence (real output, not claims) · traceability to criteria ·
@@ -304,15 +345,20 @@ rationale.
    read-only toward implementation itself. Its packet includes the tester's **evidence pack**
    (transcript, screenshots, seeded data, app session) — the hunt is desk-first and opens a
    browser only for a suspected gap on an unexercised path, never re-driving evidenced flows
-   (§0 rule 4). The dispatching skill routes its findings **straight into development** — build-me / design-me per domain, do-me for mixed, defects to fix-me
-   (never developed dressed as "improvements") — with the routed skills' own tier gates intact.
-   The dispatching skill then publishes the hunt report as an **artifact** (load the
-   `artifact-design` skill first) containing **only the hunter's findings** and each one's
-   outcome; no artifact for an empty hunt.
+   (§0 rule 4). The dispatching skill disposes of findings **per §0's one bounded wave**: each
+   finding faces a refuter first (Medium+); surviving reproducible **Trivial/Small defects on
+   surfaces the intake already touched** route to development (fix-me, or the owning skill, tier
+   gates intact); **everything else parks as a proposal in the review packet** — improvements are
+   never developed dressed as "defects", and wave-1 findings never spawn a wave 2. The hunt
+   outcome lives in the review packet; only in `manual` mode may the skill additionally publish
+   the findings-only hunt report as an **artifact** (load `artifact-design` first) — never an
+   external artifact in autonomous mode, and no artifact for an empty hunt.
 6. **reference-enforcer is a hard gate**: when a UI concern carries an attached reference image,
    the concern is not done until the enforcer rules PASS — a FAIL goes back to the builder with
    the discrepancy list and the enforcer is re-dispatched, **capped at 3 enforcer cycles**, then
-   the concern is `blocked` and escalated with the last list + screenshots. The enforcer is
+   **unresolved-and-continue (§0)**: the concern is logged `unresolved` in the review packet with
+   the last list + screenshots and the run continues — in `manual` mode it escalates to the human
+   instead. The enforcer is
    read-only; a visual verdict requires screenshot evidence (markup-only verdicts are labeled as
    such and never silently treated as visually verified). Strictness: inferred from the reference
    type (sketch → structural only; hi-fi → + visual character), user note overrides.
@@ -332,6 +378,7 @@ rationale.
 - **Schema/migration design**: build-me's cycle (SA contract + database-architect design);
   ship-me only generates and applies scripts from migrations that already exist.
 - **Improvement findings**: logical-hunter detects; the dispatching skill (do-me / loop-me)
-  routes each finding straight into development and owns the findings-only artifact hunt report;
-  the development itself belongs to the routed skill (build-me / design-me / do-me for mixed) —
-  never to the hunter.
+  disposes of each finding per §0's bounded wave (in-scope Trivial/Small defects develop,
+  everything else parks as a proposal) and owns the hunt outcome in the review packet (artifact
+  only in `manual` mode); the development itself belongs to the routed skill (build-me /
+  design-me / do-me for mixed) — never to the hunter.

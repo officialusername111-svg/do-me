@@ -68,7 +68,11 @@ silencing the error where it surfaced. Right-sizing means avoiding both.
   Finish the diagnosis, then carry it to `build-me` (backend) or `design-me` (UI) — or `do-me` when
   it spans both. **The completed diagnosis document is the hand-off artifact**: symptom,
   reproduction, evidence, root-cause statement, and the layers implicated. The receiving skill
-  builds; you diagnosed.
+  builds; you diagnosed. **In autonomous mode the hand-off is a run boundary (§0 — runs never
+  chain themselves):** end this run `done-parked` with the diagnosis document plus a
+  ready-to-paste intake block for the follow-on run in the review packet; the build run starts
+  after the packet is acknowledged. Inside a `loop-me` batch the loop's reallocation path carries
+  it instead.
 
 **Anti-over-engineering rules (these bind every tier):**
 
@@ -81,6 +85,11 @@ silencing the error where it surfaced. Right-sizing means avoiding both.
   change, not a bigger fix — stop, finish the diagnosis, hand off.
 - **One regression test per defect.** The test that reproduces this bug, no speculative coverage for
   bugs you haven't found.
+- **No harness in the repo → do not scaffold one for a single fix.** Record a **scripted
+  reproduction check** as the proof instead: the exact commands, the failing output before, the
+  passing output after. Report "no harness → cannot certify GREEN" and let the run cap at
+  stage-and-report per §0 GREEN 1; propose the test harness as a parked finding, never as a
+  side-effect of one fix.
 - **Skipping diagnosis is never right-sizing.** Trivial drops ceremony, not evidence.
 
 > Context note: in this stack (ASP.NET Core MVC + Razor, EF Core/Dapper on SQL Server, LGU internal
@@ -115,7 +124,8 @@ debugging protocol; do not reimplement it. Either way, these gates hold:
 6. **Write the regression test — fails before, passes after.** Run it against the unfixed code (or
    stash the fix) and watch it fail for the diagnosed reason; then apply the fix and watch it pass.
    A test you never saw fail proves nothing. Trivial tier: a recorded self-check of the exact broken
-   path substitutes.
+   path substitutes. No-harness repo: the scripted reproduction check substitutes at **every** tier
+   — never scaffold a test project for one fix; the run caps at stage-and-report (§0 GREEN 1).
 7. **Verify the full affected path — blast radius.** Run the existing tests around the change,
    exercise the end-to-end path the fix sits on (including the failure/empty/authz branches), and
    check every other caller of the changed code. Dispatch `backend-tester` or `frontend-tester` for
@@ -157,7 +167,8 @@ exercised, callers reviewed.
 - [ ] **Blast radius verified**: existing tests pass, the full affected path works, other callers
       checked.
 - [ ] Medium/Large: diagnosis **handed off** to `build-me` / `design-me` / `do-me` with the full
-      diagnosis document — not rebuilt here.
+      diagnosis document — not rebuilt here. (Autonomous: the run ends `done-parked` with the
+      diagnosis + intake block in the packet; the follow-on run is NEW, after acknowledgment.)
 - [ ] Output follows **Symptom → Root cause → Fix → Proof → Blast radius**, every section present.
 - [ ] Autonomous mode: committed only if GREEN (§0), protected-path fixes parked for review, review
       packet produced. `manual` mode: changes staged, hooks respected, nothing auto-committed.
