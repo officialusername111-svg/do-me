@@ -148,6 +148,26 @@ whole tax to re-learn what it just wrote. Fresh dispatches are for fresh *judgme
 unbiased retry after a failed hypothesis — loop-me's changed-hypothesis reattempts stay fresh on
 purpose). Every continuation still counts against the run budget.
 
+**4. The browser is driven once — evidence reuse.** Live-app driving is the slowest, most
+expensive thing a run does; hundreds of browser steps must not be repeated by the next agent in
+line. Rules:
+
+- **Seed by script, verify by screen.** Test data is created the fast way — a SQL/API seed script
+  or direct model insert — never by clicking through entry screens N times. Creating **one**
+  record through the real screen proves the create flow; the other twelve come from the seed.
+- **The matrix is earned by the change.** Responsive sweep at the full 3 widths only when the
+  change touches layout/responsive behavior — otherwise primary width plus one narrow smoke.
+  Two test accounts only when the change is authz-relevant — otherwise one. Interactions
+  exercised: the changed ones plus one representative neighbor, not every control on the page.
+- **The tester produces an EVIDENCE PACK for downstream reuse**: step transcript, screenshots,
+  what data was seeded and how, and the running app session details. It returns with the report.
+- **The logical-hunter consumes the pack; it does not re-drive.** The hunt starts desk-side —
+  code trace plus the tester's evidence — and opens a browser only to reproduce a *specific
+  suspected gap* on a path the tester did not exercise. Re-driving an evidenced flow to "see it
+  yourself" is the exact duplicate session this rule exists to kill. Same for the
+  everyday-user persona walk: it receives the tester's seeded data and session, never re-creates
+  them.
+
 The run budget (default 40) is a ceiling, not a target — a Medium run that spends 12 dispatches
 where 5 would do has a finding-worthy efficiency defect even though it's "within budget."
 
@@ -281,8 +301,10 @@ rationale.
    files (PLAN.md / AUDIT.md / LOOP-STATE.md / RUNBOOK.md belong to the dispatching skill).
    team-leader returns gate-verdict *recommendations*; the skill rules on them.
 5. **logical-hunter is post-run and active**: dispatched by do-me / loop-me at close-out,
-   read-only toward implementation itself. The dispatching skill routes its findings **straight
-   into development** — build-me / design-me per domain, do-me for mixed, defects to fix-me
+   read-only toward implementation itself. Its packet includes the tester's **evidence pack**
+   (transcript, screenshots, seeded data, app session) — the hunt is desk-first and opens a
+   browser only for a suspected gap on an unexercised path, never re-driving evidenced flows
+   (§0 rule 4). The dispatching skill routes its findings **straight into development** — build-me / design-me per domain, do-me for mixed, defects to fix-me
    (never developed dressed as "improvements") — with the routed skills' own tier gates intact.
    The dispatching skill then publishes the hunt report as an **artifact** (load the
    `artifact-design` skill first) containing **only the hunter's findings** and each one's

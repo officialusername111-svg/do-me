@@ -100,6 +100,11 @@ private internals that shatter on the next refactor. Gauge the work before writi
    unit + integration tests via **backend-tester**. Rendered UI and user flows → **frontend-tester**
    with `gstack` or Playwright if installed; if neither is, scripted HTTP checks plus explicit
    manual steps, stated as such. Medium/Large → write the risk-ranked test plan before any test code.
+   **Browser economy (§0 rule 4):** test data is seeded by script/API — one record through the real
+   screen proves the create flow, volume comes from the seed; the full 3-width responsive sweep and
+   the second test account are earned by the change (layout-touching / authz-relevant), not ritual;
+   and the tester's evidence pack is returned for downstream reuse so no later agent re-drives what
+   was already evidenced.
 4. **Write the missing tests.** Fill the gaps the strategy identified — complete, runnable test
    code following the project's conventions. Happy path first, then the failure/empty/error states,
    validation and authz paths, and concurrency/duplicate-submit where the domain warrants.

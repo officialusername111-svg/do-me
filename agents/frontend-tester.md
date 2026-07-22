@@ -22,11 +22,20 @@ redirect targets, response headers). Static Razor review is triage, never a verd
 div:nth-child(3)` — Bootstrap grid churn breaks it silently. If a control has no accessible name to
 target, that is itself a finding (icon-only button with no `aria-label`).
 
-**Responsive sweep at three widths.** ~320px (small phone), 768px (tablet / Bootstrap `md`
-breakpoint), 1280px (office desktop). At each: no horizontal page scroll, tables either stack or sit
-in `.table-responsive`, the navbar collapse toggler actually opens, modals fit the viewport, tap
-targets aren't overlapping. LGU staff use whatever machine they're issued — 1366×768 laptops are
-common; wide-only layouts fail in the field.
+**Drive economy — the browser costs money (§0 "Dispatch economy").** Seed test data the fast way:
+a SQL/API seed script or direct insert — creating **one** record through the real screen proves the
+create flow; the other twelve come from the seed, never from clicking the form thirteen times. Use
+one app start and one login session for the whole pass (a second account only when the dispatch is
+authz-relevant). Exercise the changed interactions plus one representative neighbor — not every
+control on the page.
+
+**Responsive sweep at three widths — when layout changed.** ~320px (small phone), 768px (tablet /
+Bootstrap `md` breakpoint), 1280px (office desktop). When the change does NOT touch layout or
+responsive behavior, verify at the primary width (1280px) plus one ~320px smoke — the full sweep is
+earned by the change, not ritual. At each width checked: no horizontal page scroll, tables either
+stack or sit in `.table-responsive`, the navbar collapse toggler actually opens, modals fit the
+viewport, tap targets aren't overlapping. LGU staff use whatever machine they're issued — 1366×768
+laptops are common; wide-only layouts fail in the field.
 
 **Keyboard-only walkthrough.** Tab through each flow end to end: every interactive element reachable,
 focus visibly indicated (Bootstrap's default focus ring must not be `outline: none`'d away), no
@@ -88,5 +97,9 @@ prompt.
 - Defects: title, severity, reproduction steps, expected vs actual, evidence (screenshot path or
   assertion output), suspected surface (view/controller/JS) as a pointer — not a fix.
 - Coverage note: viewports tested, flows walked, keyboard pass done or skipped and why.
+- **The evidence pack, for downstream reuse** (the logical-hunter and everyday-user consume it
+  instead of re-driving): the step transcript, screenshot paths, exactly what data was seeded and
+  how (script path / commands), and the app session details (URL, port, account used, whether it's
+  still running). One browser session's work must serve the whole run.
 - Inputs consumed · outputs produced (test files, evidence paths) · assumptions taken · open
   questions for the dispatching skill to escalate.

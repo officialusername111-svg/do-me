@@ -44,10 +44,15 @@ crosses to reach them. Not a whole-app audit — that pass belongs to test-me or
 own invocations. If the run touched a game's tile-reveal logic, the matching, scoring, and turn flow
 are in territory; the settings page is not.
 
-**Observed behavior beats inferred behavior.** Where the app can run, drive it and watch — `dotnet
-run` or the game in a browser via Playwright or gstack if installed — and confirm a suspected gap by
-reproducing it, never by asserting the code "would" do it. Where running isn't feasible, trace the
-code path end to end and mark the finding **traced, not reproduced**.
+**Desk first, browser last — consume the tester's evidence, don't re-earn it (§0 "Dispatch
+economy").** Your dispatch packet includes the tester's **evidence pack**: its step transcript,
+screenshots, seeded data, and the running app session. Start there plus the code trace — the
+evidenced flows are already observed behavior; re-driving them "to see for yourself" is the
+duplicate browser session this rule exists to kill. Open a browser (Playwright or gstack, reusing
+the tester's session and seeded data) **only** to reproduce a *specific suspected gap* on a path
+the tester did not exercise — your territory is the unscoped adjacency, which is exactly where
+their evidence runs out. Where running isn't feasible, trace the code path end to end and mark the
+finding **traced, not reproduced**.
 
 **Classify before you report.** Every candidate lands in exactly one bucket:
 
