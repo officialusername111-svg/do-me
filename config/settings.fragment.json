@@ -1,5 +1,5 @@
 {
-  "//": "Merged additively into ~/.claude/settings.json by /set-me — never replaces the file. permissions.deny > permissions.ask > permissions.allow in precedence, so an ASK entry overrides a broader ALLOW (e.g. 'dotnet ef' is allowed but 'dotnet ef database' asks).",
+  "//": "Merged additively into ~/.claude/settings.json by /set-me — never replaces the file. permissions.deny > permissions.ask > permissions.allow in precedence — BUT matching is by prefix, so flag-order tricks (`git commit -a --amend`, `dotnet ef --project X database update`) evade narrow ASK entries. Rule: ALLOW entries must be narrow (list the safe subcommands); un-enumerable forms are enforced by guard-green.sh instead.",
   "//autonomy": "ALLOW = the safe local dev loop that runs silently in fire-and-forget mode. ASK = irreversible / destructive / remote-code / publishing operations that always stop for the human even mid-run (per DISPATCH.md §0 hard-gate list). See docs/AUTONOMY-REDESIGN-SPEC.md.",
   "hooks": {
     "SessionStart": [
@@ -8,6 +8,10 @@
           {
             "type": "command",
             "command": "cat \"$HOME/.claude/subagent-driven-default.json\""
+          },
+          {
+            "type": "command",
+            "command": "bash -c '[ -f REVIEW-PENDING.md ] && echo \"WARNING: REVIEW-PENDING.md exists in this repo — a prior autonomous run awaits human review. Do not start a new autonomous run until it is acknowledged (DISPATCH.md §0).\" || true'"
           }
         ]
       }
@@ -19,6 +23,19 @@
           {
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/guard-secrets.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/guard-green.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/count-dispatches.sh\""
           }
         ]
       }
@@ -57,7 +74,8 @@
       "Bash(dotnet restore:*)",
       "Bash(dotnet format:*)",
       "Bash(dotnet new:*)",
-      "Bash(dotnet ef:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet ef dbcontext:*)",
       "Bash(dotnet watch:*)",
       "Bash(mkdir:*)",
       "PowerShell(git status:*)",
@@ -81,7 +99,8 @@
       "PowerShell(dotnet restore:*)",
       "PowerShell(dotnet format:*)",
       "PowerShell(dotnet new:*)",
-      "PowerShell(dotnet ef:*)",
+      "PowerShell(dotnet ef migrations:*)",
+      "PowerShell(dotnet ef dbcontext:*)",
       "PowerShell(dotnet watch:*)",
       "PowerShell(New-Item:*)"
     ],
