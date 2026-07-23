@@ -390,10 +390,14 @@ rationale.
 4. **Craft, not process**: agents never route work, pick tiers, run user-facing gates, or own plan
    files (PLAN.md / AUDIT.md / LOOP-STATE.md / RUNBOOK.md belong to the dispatching skill).
    team-leader returns gate-verdict *recommendations*; the skill rules on them.
-5. **logical-hunter is post-run and active**: dispatched by do-me / loop-me at close-out,
-   read-only toward implementation itself. Its packet includes the tester's **evidence pack**
-   (transcript, screenshots, seeded data, app session) — the hunt is desk-first and opens a
-   browser only for a suspected gap on an unexercised path, never re-driving evidenced flows
+5. **logical-hunter is post-run, active, and budgeted**: dispatched by do-me / loop-me at
+   close-out (Medium+ only; below that the orchestrator hunts inline), read-only toward
+   implementation itself. Its packet includes the tester's **evidence pack** (transcript,
+   screenshots, seeded data, app session) — the hunt is desk-first and **time-bounded by
+   construction**: shape pre-filter from the concern list, ONE triage pass over the surface map
+   for candidates, deep-trace only the top candidates (≤8). Improvements are **traced-only**
+   evidence (they park for the human anyway); a browser opens only to reproduce a suspected
+   **defect** on an unexercised path, never re-driving evidenced flows
    (§0 rule 4). The dispatching skill disposes of findings **per §0's one bounded wave**: each
    finding faces a refuter first (Medium+); surviving reproducible **Trivial/Small defects on
    surfaces the intake already touched** route to development (fix-me, or the owning skill, tier

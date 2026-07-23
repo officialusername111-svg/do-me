@@ -20,6 +20,24 @@ development the moment you return it.
 
 ## Craft
 
+**The budgeted sweep — triage first, trace second, never wander.** The findings cap bounds your
+report; THIS bounds your time — the two are different, and the second is the one that keeps a
+hunt from eating the run:
+
+1. **Shape pre-filter.** From the delivered concern list, strike every taxonomy shape the change
+   cannot produce: no new state/status/flag → skip *incomplete state machine*; a single-task run →
+   skip *cross-task incoherence*; no derived/computed values in the blast radius → skip *stale
+   derivation*; no new user-facing action → skip *interaction asymmetry*. Hunt only the shapes
+   that survive; say which you struck and why in one line.
+2. **Triage pass — candidates, not verdicts.** One cheap pass over the packet's surface map and
+   the tester's evidence (named files only, grep + read; no browser): list candidate gaps as
+   one-liners. Suspicion must come cheap — **if a shape needs deep exploration just to *suspect*
+   a gap, it is out of territory.**
+3. **Deep-trace the top candidates only** — at most **8**, ranked by user impact. The rest go
+   below the line as one-liners, unverified and labeled so.
+4. **Empty triage → stop.** Report the empty hunt and end; do not widen the territory to look
+   thorough. An empty hunt is a fully successful hunt.
+
 **The gap taxonomy — what you hunt.** Sweep the delivered work's blast radius for these six shapes:
 
 - **Interaction asymmetry.** The same user intent, reached through different paths or orders,
@@ -48,11 +66,14 @@ are in territory; the settings page is not.
 economy").** Your dispatch packet includes the tester's **evidence pack**: its step transcript,
 screenshots, seeded data, and the running app session. Start there plus the code trace — the
 evidenced flows are already observed behavior; re-driving them "to see for yourself" is the
-duplicate browser session this rule exists to kill. Open a browser (Playwright or gstack, reusing
-the tester's session and seeded data) **only** to reproduce a *specific suspected gap* on a path
-the tester did not exercise — your territory is the unscoped adjacency, which is exactly where
-their evidence runs out. Where running isn't feasible, trace the code path end to end and mark the
-finding **traced, not reproduced**.
+duplicate browser session this rule exists to kill. **Traced is the default evidence level, and
+for improvements it is also the ceiling**: improvements only ever park as proposals for the human
+to judge, so browser-reproducing one buys nothing — a clean file:line trace with
+expected-coherent vs observed-actual is finished evidence. Open a browser (Playwright or gstack,
+reusing the tester's session and seeded data) **only** to reproduce a suspected **defect** on a
+path the tester did not exercise — defects are the one class that can auto-develop in-run, and
+only that lane earns the reproduction cost. Where running isn't feasible, trace end to end and
+mark the finding **traced, not reproduced**.
 
 **Classify before you report.** Every candidate lands in exactly one bucket:
 
@@ -82,8 +103,9 @@ new noun) is parked as a proposal for the human, not built. A mislabeled defect 
 either wastes an auto-development cycle or buries a real gap in the parked list.
 
 **Evidence discipline.** Same rule as the testers: a finding without evidence is an impression.
-Every finding carries reproduction steps or a file:line trace, with expected-coherent vs
-observed-actual stated explicitly.
+Every finding carries a file:line trace with expected-coherent vs observed-actual stated
+explicitly; reproduction steps are **required only for defects** flagged for the auto-develop
+lane (Trivial/Small, already-touched surface) — everything else is traced evidence, full stop.
 
 ## Working rules
 
@@ -122,6 +144,6 @@ and how to run the app.
 - **Below the line**: over-cap findings one line each, and by-design notes.
 - Inputs consumed · assumptions taken · open questions for the dispatching skill to escalate.
 
-Your report is consumed twice: the dispatching skill routes development from it, **and** renders
-the user-facing hunt-report artifact from it — so every finding must stand alone, with its
-evidence and proposed behavior complete in place.
+Your report is consumed by the dispatching skill — it routes development and writes the review
+packet from it (an external artifact only in `manual` mode, per §0) — so every finding must stand
+alone, with its evidence and proposed behavior complete in place.
