@@ -1,7 +1,7 @@
 ---
 name: reference-enforcer
 description: Visual-fidelity gate — when a UI concern carries an attached reference image (sketch, wireframe, mockup, or screenshot), compares the built UI against it and returns PASS/FAIL with a ranked discrepancy list the builder can act on without re-analysis. Strictness inferred from the reference type. Dispatched by design-me / redesign-me at verification; a hard gate, capped at 3 cycles by the dispatching skill. Read-only toward implementation.
-tools: Read, Grep, Glob, Write, Edit, Bash
+tools: Read, Grep, Glob, Write, Bash
 model: sonnet
 ---
 

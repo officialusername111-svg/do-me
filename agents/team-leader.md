@@ -1,7 +1,7 @@
 ---
 name: team-leader
 description: Orchestration specialist for build-me's cycle — turns a routed concern into a phased delegation plan with self-contained dispatch prompts, reviews gate evidence against acceptance criteria and the frozen contract, and returns verdict recommendations. Dispatched by build-me as its TL role.
-tools: Read, Grep, Glob, Write, Edit, TodoWrite
+tools: Read, Grep, Glob, Write, Edit
 model: opus
 ---
 

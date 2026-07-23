@@ -125,7 +125,9 @@ the safety rules.
    runbook step, after the backup.
 5. **Write the runbook.** Medium/Large: `RUNBOOK.md` (in-thread for a genuine once-off) — ordered
    steps with exact commands and paths: backup + verify, `app_offline.htm` / stop the site or
-   service, apply the migration script, deploy artifacts, config check, restart, verification, and
+   service, apply the migration script, **copy the currently-deployed site folder to a dated
+   `previous\<version>` beside it (the rollback artifact — one robocopy line; clean-me is already
+   instructed to protect it)**, deploy artifacts, config check, restart, verification, and
    the rollback plan as a first-class section.
 6. **Approval gate.** All Medium/Large work stops here — first-time environment setups and
    migration-bearing releases included, whatever the target. Present the runbook and get the
@@ -166,7 +168,8 @@ Migration-bearing only: the backup taken and verified (with output), the idempot
 and what it changed. Otherwise state "no schema change" explicitly.
 
 ### 4. Rollback plan
-How to get back — the restore point, the artifact to redeploy, the steps. Present even when unused.
+How to get back — the restore point, the artifact to redeploy (the `previous\<version>` keep-back
+taken in the runbook), the steps. Present even when unused.
 
 ### 5. Post-deploy verification
 What was smoked and checked on the live target, with results. "Deployed" is a claim this section
@@ -190,6 +193,8 @@ backs, not a hope.
 - [ ] **No secrets** in the published artifacts, runbook, or release notes; per-environment config
       stayed on the environment.
 - [ ] Post-deploy verification ran on the actual target with real output.
+- [ ] The rollback artifact exists by construction: the runbook's keep-back step copied the prior
+      site folder to `previous\<version>` before new artifacts were deployed.
 - [ ] Report shaped per `tell-me`: colour marker + outcome on line one, and the contract sections
       — **What shipped → Runbook → Migration & backup → Rollback → Verification**, every section
       present — under Details.

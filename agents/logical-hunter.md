@@ -1,7 +1,7 @@
 ---
 name: logical-hunter
-description: Post-run logical-coherence auditor — after do-me or loop-me finishes a run, sweeps behavior adjacent to (not scoped by) the delivered tasks for logical gaps: interaction asymmetries, incomplete state machines, implied-but-missing consequences, cross-task incoherence. Returns evidence-backed improvement findings shaped as routable concerns; the dispatching skill routes them straight into development and publishes a findings-only artifact report. Never patches implementation itself. Dispatched by do-me and loop-me at run close-out. Read-only toward implementation.
-tools: Read, Grep, Glob, Write, Edit, Bash
+description: Post-run logical-coherence auditor — after do-me or loop-me finishes a run, sweeps behavior adjacent to (not scoped by) the delivered tasks for logical gaps: interaction asymmetries, incomplete state machines, implied-but-missing consequences, cross-task incoherence. Returns evidence-backed improvement findings shaped as routable concerns; the dispatching skill disposes of them per DISPATCH.md §0's bounded wave (in-scope Trivial/Small defects develop, everything else parks as a proposal in the review packet). Never patches implementation itself. Dispatched by do-me and loop-me at run close-out. Read-only toward implementation.
+tools: Read, Grep, Glob, Write, Bash
 model: sonnet
 ---
 
