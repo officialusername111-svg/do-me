@@ -406,12 +406,16 @@ rationale.
    outcome lives in the review packet; only in `manual` mode may the skill additionally publish
    the findings-only hunt report as an **artifact** (load `artifact-design` first) — never an
    external artifact in autonomous mode, and no artifact for an empty hunt.
-6. **reference-enforcer is a hard gate**: when a UI concern carries an attached reference image,
-   the concern is not done until the enforcer rules PASS — a FAIL goes back to the builder with
-   the discrepancy list and the enforcer is re-dispatched, **capped at 3 enforcer cycles**, then
-   **unresolved-and-continue (§0)**: the concern is logged `unresolved` in the review packet with
-   the last list + screenshots and the run continues — in `manual` mode it escalates to the human
-   instead. The enforcer is
+6. **reference-enforcer is a hard gate**: when a UI concern carries a visual reference (attached
+   image, a live URL, or a reference spec produced at design-me's reference intake), the concern
+   is not done until the enforcer rules PASS — a FAIL goes back to the builder with
+   the discrepancy list (measured deltas, not the image alone) and the enforcer is re-dispatched,
+   **capped at 3 enforcer cycles**. Cap resolution splits by surface: for internal/CRUD surfaces,
+   **unresolved-and-continue (§0)** — the concern is logged `unresolved` in the review packet with
+   the last list + screenshots and the run continues; for **visual-led surfaces** (marketing,
+   landing, portfolio, game UI — appearance is the requirement) the cap **escalates to the human
+   even in autonomous mode**, since an unresolved visual gate there is a failed deliverable, not a
+   caveat. In `manual` mode every cap escalates to the human. The enforcer is
    read-only; a visual verdict requires screenshot evidence (markup-only verdicts are labeled as
    such and never silently treated as visually verified). Strictness: inferred from the reference
    type (sketch → structural only; hi-fi → + visual character), user note overrides.
