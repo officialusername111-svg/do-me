@@ -9,7 +9,9 @@ description: >-
   drifted setup. ALSO trigger when the user clones the do-me bundle repo and asks to apply it.
   ALSO trigger when the user asks to "clean up my setup", "remove duplicate skills", or when
   skills appear twice in the session's skill list (the double-load symptom of project-level
-  copies). Operates INDEPENDENTLY: it locates the bundle, diffs it against the installed state,
+  copies). ALSO trigger on "reconcile this project's .claude", "check my projects against the
+  toolkit", or any ask to audit per-project .claude folders against the global install.
+  Operates INDEPENDENTLY: it locates the bundle, diffs it against the installed state,
   removes duplicates, installs non-destructively, and verifies without being told each step.
   Invoke with /set-me. Installation and setup hygiene only — authoring or changing skill content
   is manual work (or skill-creator); committing bundle changes belongs to commit-me; development
@@ -32,7 +34,10 @@ do-me/                       ← the cloned bundle repo (this skill lives in it)
   skills/<name>/SKILL.md     ← the -me family incl. this skill; do-me/references/DISPATCH.md
   agents/*.md                ← 17 deep-specialist subagents (incl. plan-critic, logical-hunter, reference-enforcer, security-skeptic, everyday-user)
   commands/redesign-me.md    ← the redesign-me command alias
-  hooks/guard-secrets.sh     ← PreToolUse guard: blocks staging/committing .env
+  hooks/guard-secrets.sh     ← PreToolUse guard: blocks staging/committing secrets (incl. chained adds)
+  hooks/guard-green.sh       ← PreToolUse guard: protected paths, test integrity, history rewrites
+  hooks/count-dispatches.sh  ← PreToolUse guard on subagent dispatch: the mechanical run budget
+  hooks/session-length-check.sh ← UserPromptSubmit watchdog: session-length 🟡/🔴 notes
   config/CLAUDE.md           ← global working-preferences template
   config/subagent-driven-default.json   ← SessionStart standing-default payload
   config/settings.fragment.json         ← hooks + permission allowlist to merge
@@ -44,6 +49,9 @@ do-me/                       ← the cloned bundle repo (this skill lives in it)
   change nothing. No ceremony.
 - **Cleanup / dedup** ("clean up my setup", duplicate skills showing): run the dedup sweep below,
   change nothing else.
+- **Project reconcile** ("reconcile this project's .claude", "check my projects against the
+  toolkit"): the per-project audit below — the current project by default, or every project root
+  the user names. Touches only project `.claude/` folders, never `~/.claude`.
 - **Sync** (toolkit already installed, bundle is newer): the dedup sweep, then copy only what
   differs, re-merge settings only if the fragment changed, report the delta. Do not re-write
   identical files — a sync that touches nothing should say so.
@@ -87,6 +95,35 @@ routing degrades. The sweep finds and removes them, with these rules:
    from two places, say so explicitly and name both paths — never report "clean" past a known
    double-load.
 
+## Project reconcile — audit a project's `.claude/` against the toolkit
+
+The standing capability for "reconcile this project's `.claude`" — the current project by
+default, or **each project root the user names** (never scan a whole drive uninvited; ask for the
+roots if "all my projects" comes without them). Per project, inventory `.claude/` and classify
+every item:
+
+1. **Managed duplicate, identical to global** (a skill/agent/command/hook the toolkit manages,
+   hash-equal to `~/.claude`'s copy) → remove: `git rm` staged if tracked, backup + delete if not.
+   This is the double-load disease; the global copy is the only copy.
+2. **Managed duplicate that differs** → drift, not junk. Diff both sides and say which is newer.
+   Project-side improvements usually move INTO the global copy and the bundle (hand the content
+   change to the human — set-me never authors skill content), THEN the project copy goes. If the
+   direction is unclear, park with both diffs; never guess a merge.
+3. **Project-specific and legitimate** → keep and list: `settings.local.json`, `launch.json`,
+   a genuinely project-local skill/agent the toolkit doesn't manage, project permission grants,
+   `autonomy.protectedPaths` globs. These are exactly what project `.claude/` folders are FOR.
+4. **Redundant with global** → flag, don't delete: a project permission rule the global
+   settings already grant, or a project CLAUDE.md line repeating the global one verbatim. Listed
+   as "redundant — safe to remove on your OK"; removing settings entries changes behavior, so it
+   parks for the human.
+5. **Stale references** → flag: project config pointing at a toolkit item that no longer exists
+   (a renamed skill, a removed hook path). Report with the exact line; fixing it is a one-line
+   edit the report proposes.
+
+Each reconciled project gets its own subsection in the report (contract section 2). The sweep
+rules above bind here too: never delete what you can't prove, everything doubtful parks, backups
+before removal, and `~/.claude` itself is never modified in this mode.
+
 ## The process
 
 1. **Locate the bundle.** You are running from it (this SKILL.md's own directory tree), or the
@@ -123,9 +160,11 @@ routing degrades. The sweep finds and removes them, with these rules:
 ### 1. Mode & source
 Verify / sync / fresh install, and where the bundle came from (path or clone).
 
-### 2. Cleanup & dedup results
+### 2. Cleanup & dedup / reconcile results
 What was removed (and how: `git rm` vs backup+delete), what drift was found and how it was
-reconciled, what was left alone as project-specific. "Nothing to clean" is a valid, stated result.
+reconciled, what was left alone as project-specific, what was flagged redundant or stale (parked,
+with the proposed one-line fix). One subsection per project when reconciling several. "Nothing to
+clean" is a valid, stated result.
 
 ### 3. Installed / updated / skipped
 A table: item · action (new / updated / identical / local-only kept) — every bundle file accounted
@@ -146,7 +185,10 @@ assertions. Note that new skills register on the next session start.
 - [ ] Installed into `~/.claude` (global) — nothing written into a project `.claude/`.
 - [ ] Dedup sweep ran: no managed item loads from two places; drift reconciled global-first, not
       guessed; git-tracked removals staged via `git rm`, never committed here.
-- [ ] Only provable duplicates were removed — project-specific items left alone and listed.
+- [ ] Only provable duplicates were removed — project-specific items left alone and listed;
+      redundant/stale project entries flagged and parked, never silently deleted.
+- [ ] Project-reconcile mode touched only the named projects' `.claude/` folders — `~/.claude`
+      unmodified.
 - [ ] Nothing local-only was deleted; anything overwritten was backed up first.
 - [ ] `settings.json` merged additively and validated as parseable JSON.
 - [ ] `CLAUDE.md` never replaced without showing the diff and getting a yes.

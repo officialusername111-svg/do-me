@@ -39,7 +39,7 @@ Manual alternative: copy `skills/`, `agents/`, `commands/`, `hooks/` into `~/.cl
 | `/loop-me` | Batch queue orchestrator — 3 attempts per item, unresolved-and-continue, LOOP-STATE.md handoff |
 | `/tell-me` | Plain-language reporting — shapes every report and reply (outcome first, technical record under Details) |
 | `/clean-me` | Workspace janitor — removes provable junk, parks the doubtful, ledgers everything in CLEAN-HISTORY.md |
-| `/set-me` | Installs/syncs this toolkit onto a machine |
+| `/set-me` | Installs/syncs this toolkit onto a machine; reconciles per-project `.claude/` folders against the global install |
 
 **The wiring registry** — `skills/do-me/references/DISPATCH.md` — is the single source of truth
 for which skill dispatches which specialist agent, with what briefing packet and return shape,
