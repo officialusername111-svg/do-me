@@ -134,6 +134,10 @@ debugging protocol; do not reimplement it. Either way, these gates hold:
 
 ## Required output contract
 
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
+
 Report every fix in these five sections, in order. A trivial fix earns a sentence per section, not
 an essay — but never drop a section silently.
 
@@ -157,6 +161,8 @@ exercised, callers reviewed.
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 - [ ] **Reproduced** before any code changed — or explicitly flagged unreproducible and handled as
       evidence-gathering, not a speculative fix.
 - [ ] Diagnosis built on **actual evidence** — real error text, logs, data, generated SQL were read,

@@ -93,9 +93,11 @@ private internals that shatter on the next refactor. Gauge the work before writi
    them explicitly — you can't produce a pass/fail matrix against criteria nobody wrote down.
 2. **Detect the harness.** Find the test projects and the framework actually in use — xUnit, NUnit,
    or MSTest, **detected from the `*.csproj` and existing tests, never assumed** — plus the runner
-   command and the project's naming/fixture conventions. Match them. If no harness exists, decide
-   per the right-sizing rules: manual verification commands for trivial/small, or flag the gap for
-   medium/large.
+   command and the project's naming/fixture conventions. Match them. **Exception:** a dispatch
+   packet whose RUN-BRIEF carries the verify line (build command, test command, test paths — §0
+   rule 1) skips detection and uses those; re-detect only if a supplied command fails. If no
+   harness exists, decide per the right-sizing rules: manual verification commands for
+   trivial/small, or flag the gap for medium/large.
 3. **Choose the strategy per layer.** Services, controllers, business rules, and the data layer →
    unit + integration tests via **backend-tester**. Rendered UI and user flows → **frontend-tester**
    with `gstack` or Playwright if installed; if neither is, scripted HTTP checks plus explicit
@@ -119,6 +121,10 @@ private internals that shatter on the next refactor. Gauge the work before writi
    are handed back for the user to dispatch. Do not fix any of them yourself.
 
 ## Required output contract
+
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
 
 Structure the deliverable in these sections, in order. Right-size the prose — a trivial run needs a
 sentence per section — but don't drop a section silently.
@@ -151,6 +157,8 @@ isn't feeding an auto-commit.
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 - [ ] Target mapped from the actual diff or named surface — not from what the change was
       *supposed* to be.
 - [ ] Harness and framework **detected from the project**, conventions matched; no framework

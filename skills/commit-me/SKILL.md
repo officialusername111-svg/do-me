@@ -139,6 +139,10 @@ These bind every tier, including Trivial:
 
 ## Required output contract
 
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
+
 Every run ends with these three sections, right-sized to the tier — a Trivial commit needs a line
 per section, not an essay, but no section is dropped silently:
 
@@ -157,6 +161,8 @@ defect noticed in the diff. Empty is fine; unmentioned is not.
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 - [ ] `git status` **and** the full diff (staged, unstaged, untracked content) were actually read
       before anything was staged.
 - [ ] No secrets, credentials, `*.bak`, or `bin/`/`obj/` output staged; already-tracked junk flagged

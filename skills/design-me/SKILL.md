@@ -157,7 +157,8 @@ for "props," and keep markup, scoped CSS, and progressive-enhancement JS separat
 ## Required output contract
 
 ALWAYS structure the deliverable in these four sections, in this order. This is the contract — don't
-skip a section even if it's short.
+skip a section even if it's short. Wrap the deliverable in a `tell-me`-shaped report — colour
+marker + outcome line first, then these four sections in this order as the technical body.
 
 ### 1. Component architecture
 A short map before code: the component(s) and their responsibilities, how they compose (parent /
@@ -384,6 +385,9 @@ otherwise, doesn't swallow events, doesn't hardcode copy, and doesn't break when
 rendered twice. Surprises are bugs.
 
 ## Definition of done — self-check before responding
+
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, the four contract sections
+      following as the technical body.
 
 **Build mode** — run this list and fix anything that fails before presenting:
 

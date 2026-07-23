@@ -53,8 +53,13 @@ enough to waive them.
    conversation.** A standing preference, a memory note, or last week's yes is not approval. Show
    what will run and wait for the yes — every time.
 2. **A migration-bearing release requires a verified backup FIRST and a written rollback plan.**
-   Verified means you watched the backup complete and checked it (`RESTORE VERIFYONLY` at minimum)
-   — "the nightly job probably ran" is not a backup. No backup, no migration.
+   Verified means you watched the backup complete and checked it (`RESTORE VERIFYONLY WITH
+   CHECKSUM` at minimum) — "the nightly job probably ran" is not a backup. When the migration
+   script contains destructive operations (drops, type narrowing, data movement) and free disk
+   allows, upgrade to a **real test-restore**: `RESTORE DATABASE [X_verify] ... WITH MOVE` to
+   scratch files, confirm it comes ONLINE, then DROP it — VERIFYONLY proves the media is readable,
+   not that it restores; minutes of rehearsal versus discovering that during a live failure. No
+   backup, no migration.
 3. **Never deploy code that has not passed verification.** Demand `test-me` evidence (its pass/fail
    matrix) or run the cheap checks yourself — a Release build, the existing suite, a smoke of the
    critical path. Anything red halts the deploy; it does not "ship with known issues."
@@ -143,6 +148,10 @@ the safety rules.
 
 ## Required output contract
 
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
+
 Report every release in these five sections, in order. A Small redeploy earns a sentence per
 section, not an essay — but never drop a section silently.
 
@@ -181,8 +190,9 @@ backs, not a hope.
 - [ ] **No secrets** in the published artifacts, runbook, or release notes; per-environment config
       stayed on the environment.
 - [ ] Post-deploy verification ran on the actual target with real output.
-- [ ] Output follows **What shipped → Runbook → Migration & backup → Rollback → Verification**,
-      every section present.
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, and the contract sections
+      — **What shipped → Runbook → Migration & backup → Rollback → Verification**, every section
+      present — under Details.
 - [ ] Repo artifacts (`RUNBOOK.md`, release notes) staged, hooks respected, **nothing
       auto-committed** — recording them hands off to `commit-me`; nothing pushed, nothing tagged,
       without an explicit ask.

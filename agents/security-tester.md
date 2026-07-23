@@ -37,7 +37,8 @@ require `JavaScriptEncoder` or JSON serialization; check `UnsafeRelaxedJsonEscap
 
 **Secrets.** Scan `.env`, `appsettings*.json`, `web.config`, launchSettings for `Password=`, `Pwd=`, API
 keys. Verify .gitignore actually excludes them, then check history: `git log --all -p -- .env appsettings*`
-and `git log -S "Password="`. A secret in history is compromised even if the file is now ignored. Prefer
+and `git log -S "Password="`. A secret in history is compromised even if the file is now ignored —
+the remediation is rotation, not history rewrite. Prefer
 Windows Integrated Security in connection strings on this stack — plaintext SQL auth in tracked config is
 a High.
 

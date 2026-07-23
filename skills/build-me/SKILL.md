@@ -102,7 +102,9 @@ re-explores what you already read.
   `PLAN.md` — depth is what this tier buys.
 - **Verify-fix cycles continue the same BD agent** (follow-up message, not a fresh dispatch) — it
   already holds the brief and its own code; only a changed-hypothesis retry earns a fresh agent.
-  BT is never fused with BD, at any tier — the GREEN oracle stays independent.
+  **Re-verification likewise continues the same BT** (cycle 2+ re-checks the failed rows plus one
+  regression smoke, per §0 rule 3). BT is never fused with BD, at any tier — the GREEN oracle
+  stays independent.
 
 **Anti-over-engineering rules (these bind every tier):**
 
@@ -191,8 +193,10 @@ one pass.
    isolation is not the same as the pieces passing together.
 7. **Verify loop (BT → TL).** BT runs the test strategy and reviews against acceptance criteria,
    security (OWASP), and the matrix, and reports whether tests actually **executed** and whether the
-   test surface stayed intact (the evidence the §0 GREEN gate consults). Findings go to TL, who
-   re-dispatches fixes to the **same** BD. Repeat per concern. **Cap: 3 cycles** on a stuck item,
+   test surface stayed intact (the evidence the §0 GREEN gate consults). Findings go to TL, and
+   fixes are delivered as a **follow-up message to the live BD task** (recorded in Run State;
+   warm-start re-dispatch only as the logged fallback — §0 rule 3). Repeat per concern. **Cap: 3
+   cycles** on a stuck item,
    then mark it `unresolved` (with the failing output and the diffs attempted), log it to the review
    packet, and **continue** — never spin, and never sit waiting on the human mid-run.
 8. **Done gate (TL).** The run ends when every applicable box in "Definition of done" is green.
@@ -200,6 +204,10 @@ one pass.
    summarize to the human: what changed, how it was verified, and any known limitations.
 
 ## Required output contract
+
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
 
 Structure the deliverable in these sections, in order. Right-size the prose — a trivial fix needs a
 sentence per section, not an essay — but don't drop a section silently.
@@ -236,6 +244,9 @@ is a claim you back with this section, not a hope.
 ```
 
 ## Definition of done — self-check before responding
+
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 
 Run this and fix anything that fails before presenting (skip rows that genuinely don't apply, and say
 which):

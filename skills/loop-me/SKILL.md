@@ -4,7 +4,8 @@ description: >-
   Orchestrate a BATCH of development concerns through a bounded agent loop: intake and classify the
   queue, plan and order it, allocate each concern — build-me is the MAIN executor, with design-me /
   redesign-me for UI-only items, fix-me for defects, and do-me coordinating genuinely mixed ones —
-  gate pass/fail on test-me's evidence, and either close the item out or reallocate with a changed
+  gate pass/fail on executed-test evidence — the routed skill's own tester report, or test-me when
+  none exists — and either close the item out or reallocate with a changed
   hypothesis — at most 3 attempts per concern, explicit persistent state (LOOP-STATE.md), and a
   final batch report where every task is accounted for. Use WHENEVER the user says "work through
   this list", "handle these concerns", "process the backlog", "loop through these tasks", "run the
@@ -125,10 +126,15 @@ the table was drawn. Gauge the batch before building anything:
 4. **Development.** The routed skill does the work in **its own autonomous mode** (§0) — its plan
    gate is a plan-critic review, not a user prompt, so the loop never blocks on a human mid-concern.
    In `manual` mode the routed skill's human checkpoints are honored and the loop waits on them.
-5. **Testing & review.** The Pass? decision requires **evidence, not optimism**: `test-me`'s
-   pass/fail matrix for anything non-trivial, or the routed skill's own recorded verification for
-   small items. A defect discovered here goes to `fix-me` per the family rule — and that fix
-   attempt **consumes this concern's attempt counter**, not a new queue slot.
+5. **Testing & review.** The Pass? decision requires **evidence, not optimism** — but not
+   verification paid twice: **the routed skill's own tester report carrying the GREEN-oracle facts
+   (executed-test count, pass/fail vs criteria, test-integrity) IS the Pass? evidence at every
+   tier** — build-me's BT is already builder-independent per the registry's never-fused rule, so
+   the oracle stays honest. Dispatch standalone `test-me` only when the routed skill returned **no
+   executed-test evidence** (a no-harness stage-and-report, or no tester ran) or when the
+   concern's acceptance criteria **span multiple routed skills** (cross-skill integration). A
+   defect discovered here goes to `fix-me` per the family rule — and that fix attempt **consumes
+   this concern's attempt counter**, not a new queue slot.
 6. **Pass? → Done, reallocate, or unresolved.**
    - **Pass → Done (stage and close out):** the concern's changes are staged and its acceptance
      criteria evidenced. Mark `passed` with an evidence pointer, update state, move to the next
@@ -216,7 +222,7 @@ up where the last left off. Produce it in exactly this shape:
 
 ### T2 — attempt 1 (failed)
 - **Tried:** build-me added the status to the enum and transition table; migration applied.
-- **Verified:** test-me matrix — 2 fail: released documents still appear in the active queue
+- **Verified:** build-me BT report — 2 fail: released documents still appear in the active queue
   view; the "for release" → "released" transition is not enforced.
 - **Handed to next attempt:** the queue view filters on `IsActive`, which the new status never
   sets — target the projection/query layer, not the enum. Different layer, same route.
@@ -233,6 +239,10 @@ means attempt 2 is in progress; a first-try success reads `passed 1/3`. Small ba
 same queue table in-thread instead of a file; the columns and statuses are identical.
 
 ## Required output contract — the batch report
+
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
 
 Structure the deliverable in these sections, in order. Right-size the prose, but never drop a
 section silently.
@@ -265,6 +275,8 @@ render it as an `artifact-design` page. If the hunt found nothing, say so in-thr
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 - [ ] **Right-sized**: no queue machinery for 1–2 concerns; no state file for a single-session
       batch; Medium/Large got the file and the pre-execution queue-plan review (plan-critic in
       autonomous mode; human checkpoint in `manual`).
@@ -272,8 +284,8 @@ render it as an `artifact-design` page. If the hunt found nothing, say so in-thr
 - [ ] Allocation followed the main-path rule: `build-me` for development concerns, `design-me` /
       `redesign-me` for UI-only, `fix-me` for defects, `do-me` for genuinely mixed — no domain
       work done here.
-- [ ] Every Pass? decision backed by evidence (`test-me` matrix or recorded verification) — none
-      by optimism.
+- [ ] Every Pass? decision backed by executed-test evidence (the routed skill's tester report, or
+      `test-me`'s matrix as the fallback/integration gate) — none by optimism.
 - [ ] Every reattempt carried the prior failure findings and a changed hypothesis — no groundhog
       looping, no identical re-runs counted as attempts.
 - [ ] No concern exceeded 3 attempts; unresolved items marked and moved past, never stalled on;
@@ -302,7 +314,9 @@ render it as an `artifact-design` page. If the hunt found nothing, say so in-thr
 - `fix-me` — receives defect-shaped queue items directly, and defects found during verification;
   those fix cycles spend the owning concern's attempt counter.
 - `do-me` — coordinates the genuinely mixed FE+BE concerns (contract-first) inside a queue slot.
-- `test-me` — the pass gate: its pass/fail matrix is the evidence the Pass? decision runs on.
+- `test-me` — the fallback and integration gate: dispatched when a routed skill returned no
+  executed-test evidence, or when criteria span multiple routed skills; the routed skill's own
+  tester report is the default Pass? evidence.
 - `logical-hunter` (agent) — the post-queue logic hunt: sweeps the batch's blast radius for
   unscoped logical gaps; its surviving in-scope Trivial/Small defects become the follow-up queue,
   everything else parks as a proposal in the review packet (artifact only in `manual` mode); one

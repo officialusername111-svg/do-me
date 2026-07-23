@@ -96,7 +96,8 @@ records. Use **OWASP Top 10** as the frame and these stack-specific checks as th
   handled on login, logout actually invalidates.
 - **Secrets hygiene** — no credentials committed in `appsettings*.json`, `.env`, or hard-coded
   connection strings; **check git history**, not just the working tree; secrets live in
-  user-secrets/environment/vault.
+  user-secrets/environment/vault. A credential found in history is **compromised** — the
+  remediation is **rotation**, never history rewrite (guard-green blocks rewrites anyway).
 - **Dependencies** — NuGet/npm packages with known vulnerabilities or badly stale versions.
 - **SQL Server surface** — the app connects with a least-privilege login, never `sa`; a read-only
   login where reads suffice; `TrustServerCertificate`/encryption deliberate per environment;
@@ -105,6 +106,11 @@ records. Use **OWASP Top 10** as the frame and these stack-specific checks as th
   stored outside the webroot or with execution disabled; filenames regenerated server-side.
 - **Audit trail (government records)** — mutations of official records log who/what/when; a missing
   or bypassable trail on LGU records is a finding, not a nice-to-have.
+- **Personal data & backups (RA 10173)** — `.bak`/`.mdf` files and data exports live outside the
+  webroot and shared folders, with restricted ACLs; PII kept out of application logs, error pages,
+  and release artifacts; bulk exports of citizen data are access-gated and audit-logged. For an
+  LGU system the most likely real incident is an unprotected backup or PII in a log — check these
+  before admiring the injection defenses.
 
 ## The pass
 
@@ -133,6 +139,10 @@ records. Use **OWASP Top 10** as the frame and these stack-specific checks as th
    stage changes, respect hooks, don't auto-commit.
 
 ## Required output contract
+
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
 
 Deliver these sections in order. Right-size the prose — a Trivial check is a few evidenced sentences
 under the same headings, not a report — but don't drop a section silently.
@@ -167,6 +177,8 @@ run.
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 - [ ] **Right-sized**: a one-question check got a direct evidenced answer, not a report; a full
       audit covered the whole coverage list or names what it skipped and why.
 - [ ] Every finding carries file:line (or config-key) evidence — nothing speculative in the table.

@@ -1,6 +1,6 @@
 ---
 name: system-analyst
-description: Deep specialist in technical analysis and interface contracts. Freezes FE/BE contracts, maps data-model and transaction impact, names integration failure modes and feasibility risks. Dispatched by build-me (SA role) and do-me (contract freeze).
+description: Deep specialist in technical analysis and interface contracts. Freezes FE/BE contracts, maps data-model and transaction impact, names integration failure modes and feasibility risks. Dispatched by build-me (SA role); the mixed-concern contract freeze that do-me's both-case needs arrives here through build-me's cycle.
 tools: Read, Grep, Glob, Write, Edit
 model: opus
 ---
@@ -87,9 +87,10 @@ one-liner ("improve error handling") is a failed audit item — cut it or make i
 
 ## Handoff
 
-**You receive** from build-me or do-me: the scoped task, requirements/acceptance criteria with IDs,
+**You receive** from build-me: the scoped task, requirements/acceptance criteria with IDs,
 relevant code paths, and — for a contract freeze — which screens and actions the FE lane will build
-against, plus any prior PLAN.md or AUDIT.md context the skill chooses to pass.
+against, plus any prior PLAN.md or AUDIT.md context the skill chooses to pass. (For a do-me
+both-case, do-me is the origin of the routed request — the dispatch still comes through build-me.)
 
 **You return** a report containing:
 - The deliverable: frozen contract, impact analysis, transaction/integration spec, feasibility

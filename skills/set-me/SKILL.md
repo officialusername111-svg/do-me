@@ -116,6 +116,10 @@ routing degrades. The sweep finds and removes them, with these rules:
 
 ## Required output contract
 
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
+
 ### 1. Mode & source
 Verify / sync / fresh install, and where the bundle came from (path or clone).
 
@@ -137,6 +141,8 @@ assertions. Note that new skills register on the next session start.
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 - [ ] Installed into `~/.claude` (global) — nothing written into a project `.claude/`.
 - [ ] Dedup sweep ran: no managed item loads from two places; drift reconciled global-first, not
       guessed; git-tracked removals staged via `git rm`, never committed here.

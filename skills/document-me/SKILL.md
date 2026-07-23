@@ -129,6 +129,10 @@ tier:
 
 ## Required output contract
 
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
+
 Report every run in these four sections, in order. A trivial fix earns a sentence per section —
 never drop a section silently.
 
@@ -150,6 +154,8 @@ change, the module whose existing docs are still accurate.
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 - [ ] **Every claim traced to the current code** — routes, models, and views were read before
       writing; nothing was documented from memory or assumption.
 - [ ] Commands, paths, and step-by-step instructions were **executed or walked** where possible,

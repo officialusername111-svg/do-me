@@ -52,9 +52,9 @@ reviewers with different assignments catch what any one of them misses. The pane
 - **A panel is 3 parallel `plan-critic` dispatches, each briefed with a different lens** —
   (1) *correctness/statutory*: is the logic and the law right; (2) *security/data*: what can leak,
   break, or be destroyed; (3) *simplicity/scope*: what grew beyond the ask, what is over-built.
-  Each panelist receives ONLY the intake text, the repo, and the plan/diff — never another
-  panelist's output, and never the planner's rationale. Blindness is the point; do not "share
-  context to save tokens."
+  Each panelist receives ONLY the intake text, the brief's facts, and the plan/diff — repo access
+  is for spot-verifying named files, never a sweep — and never another panelist's output, never
+  the planner's rationale. Blindness is the point; do not "share context to save tokens."
 - **Merge rule (mechanical, no judgment call):** any panelist HALT → the run halts to report. Any
   panelist park (`blocked-on-fact`, protected-path, out-of-scope noun) → that slice parks; parks
   are unioned, never voted away. Disagreements between panelists are recorded verbatim in the
@@ -141,7 +141,10 @@ Three rules eliminate most of it:
 **once** at intake and distills a compact brief (a `## Run Brief` section of PLAN.md, or an inline
 block for Small runs): the stack in one line, the conventions that bind (naming, data access,
 validation patterns — with one example file each), the **surface map** (the exact files this run
-touches, one line each on what they are), the frozen contract, and the acceptance criteria. Every
+touches, one line each on what they are), the frozen contract, the acceptance criteria, and the
+**verify line** — build command, test-runner command, test project paths, and the intake
+test-surface snapshot counts (the same snapshot GREEN 2 already takes; testers re-derive these on
+every dispatch unless the brief carries them). The brief **links** files, never pastes them. Every
 dispatch packet **embeds or points at the brief**, and briefed agents follow the reading rule:
 **read the brief's files first; explore beyond them only when a named symbol isn't where the brief
 says** — never a whole-repo sweep to re-derive what the brief already states. Exception: the
@@ -161,11 +164,21 @@ the planner's rationale or framing.
 and the critic/panel with anyone (blindness is its value).
 
 **3. Continue agents; don't resurrect them.** Within a run, a verify-fix cycle goes back to the
-**same builder agent as a continuation** (the harness can send follow-up messages to a live
-agent) — it already holds the brief, the code, and its own reasoning; a fresh dispatch re-pays the
-whole tax to re-learn what it just wrote. Fresh dispatches are for fresh *judgment* (a new lens, an
-unbiased retry after a failed hypothesis — loop-me's changed-hypothesis reattempts stay fresh on
-purpose). Every continuation still counts against the run budget.
+**same builder agent as a continuation** — named mechanics, not hand-waving: dispatch the builder
+(BD/FD) as a **background task** where the session's harness supports it, record the task id in
+PLAN.md's `## Run State`, deliver each verify cycle's findings as a **follow-up message** to that
+id, and stop the task at the run's terminal state. It already holds the brief, the code, and its
+own reasoning; a fresh dispatch re-pays the whole tax to re-learn what it just wrote. **The tester
+is likewise continued** across verify cycles of the same concern: cycle 2+ re-verifies the
+previously failing rows plus one regression smoke — the automated suite may re-run in full (cheap,
+mechanical), but browser flows are re-driven only where they previously failed, mirroring the
+enforcer's verify-the-delta rule. Tester and builder stay separate live agents, never fused. If
+background-task messaging is unavailable, the re-dispatch carries a **warm-start packet** (the
+prior agent's full report, its diff, and the RUN-BRIEF) and is logged as a fallback continuation —
+never a silent fresh dispatch. Fresh dispatches are for fresh *judgment* (a new lens, an unbiased
+retry after a failed hypothesis — loop-me's changed-hypothesis reattempts stay fresh on purpose).
+Every continuation still counts against the run budget — and since the count-dispatches hook sees
+only fresh dispatches, continuation spend is decremented by the orchestrator in PLAN.md.
 
 **4. The browser is driven once — evidence reuse.** Live-app driving is the slowest, most
 expensive thing a run does; hundreds of browser steps must not be repeated by the next agent in
@@ -203,7 +216,9 @@ where 5 would do has a finding-worthy efficiency defect even though it's "within
    rounding / exemptions, and migrations touching assessment / collection / billing tables, may be
    *modified* autonomously but are **never auto-committed** — they **park for human review** in the
    review packet. (Per-repo globs live in the project's `.claude/settings.local.json` under
-   `autonomy.protectedPaths`; absent that, the skill matches on the keyword set above.)
+   `autonomy.protectedPaths`; absent that, the skill matches on the keyword set above. The tester
+   direction of test-integrity is backstopped too — see Rules 2, tree-diff across read-only-agent
+   dispatches.)
 4. No secret-bearing file is staged (enforced by the guard hook, below).
 
 ### Run identity, decision trail, and revert
@@ -262,9 +277,12 @@ repo root** (gitignored — the first run in a repo appends it and the state-fil
 **Acknowledgment is mechanical, and only the human can give it:** the human deletes the marker
 themselves, or explicitly says "reviewed <run-id>" — only then may Claude delete it, never on
 its own initiative; a stale-looking marker is still unacknowledged. `do-me` / `loop-me` **refuse to
-start a new autonomous run on that repo while an unacknowledged marker exists**. In autonomous
-mode, do **not** publish prototypes/artifacts externally — put screenshots of the *real* built UI
-in the packet instead.
+start a new autonomous run on that repo while an unacknowledged marker exists**. At the terminal
+state, if the harness exposes a notification tool (PushNotification / task-completion
+notification), send a **best-effort push** carrying the run ID, terminal state, and a one-line
+outcome — notification failure never blocks or alters the packet; `REVIEW-PENDING.md` remains the
+mechanical record of the unacknowledged run. In autonomous mode, do **not** publish
+prototypes/artifacts externally — put screenshots of the *real* built UI in the packet instead.
 
 ### Hard gates that survive (closed list — everything not here runs autonomously)
 
@@ -336,7 +354,13 @@ rationale.
    findings, never patches. **Reciprocally, developer agents may not modify or delete existing
    tests during their attempts** — a failing pre-existing test is a finding to fix in
    implementation or to escalate, never to weaken, skip, or delete to reach green (see §0 GREEN,
-   test-integrity).
+   test-integrity). **Mechanical backstop for the tester direction:** the orchestrating skill
+   snapshots the working tree (`git status --porcelain` + `git diff --stat`) immediately before
+   and after every dispatch to a read-only agent (backend-tester, frontend-tester,
+   security-tester, logical-hunter, reference-enforcer, everyday-user); any delta outside test
+   projects and the run's evidence paths demotes the run to **parked-for-human** — same handling
+   as a weakened test — with the offending files and the dispatch that produced them named in the
+   review packet.
 3. **security-tester is strictly defensive/authorized.**
 4. **Craft, not process**: agents never route work, pick tiers, run user-facing gates, or own plan
    files (PLAN.md / AUDIT.md / LOOP-STATE.md / RUNBOOK.md belong to the dispatching skill).

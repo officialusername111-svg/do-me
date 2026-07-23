@@ -77,10 +77,14 @@ the rule as the system enforces it — read the actual validation/service code, 
 
 ## Handoff
 
-**You receive** from document-me, your sole dispatcher: the scoped doc task (which documents, and
-the audience for each artifact), the change set or feature list in scope, relevant file paths or
-diff range, and the human-approved per-artifact outline — draft against that outline as given; if
-the code forces a structural change, record it as a finding rather than silently restructuring.
+**You receive** from one of two dispatchers (per DISPATCH.md):
+- **From document-me** (the usual case): the scoped doc task (which documents, and the audience
+  for each artifact), the change set or feature list in scope, relevant file paths or diff range,
+  and the human-approved per-artifact outline — draft against that outline as given; if the code
+  forces a structural change, record it as a finding rather than silently restructuring.
+- **From ship-me** (in-release release notes only): the version and what shipped (commit/diff
+  range) — no outline is supplied; you draft the notes and return them for ship-me to review and
+  own. You never write other doc types on a ship-me dispatch.
 
 **You return** a report containing:
 - **Inputs consumed** — files/diffs read, docs reviewed.

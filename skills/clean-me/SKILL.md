@@ -38,8 +38,10 @@ parks.** A wrongly deleted file costs more than ten kept junk files.
 - Tracked duplicates (` - Copy`, `*.old` beside a live original with identical or older content):
   `git rm` — recoverable, reviewable, left staged for commit-me.
 - **Stale run state**: `LOOP-STATE.md` with every row terminal, `PLAN.md`/`AUDIT.md` of finished
-  runs, acknowledged `REVIEW-PENDING` markers. The committed run record in `docs/agent-runs/` is
-  NEVER cleaned — that is the audit trail.
+  runs. The committed run record in `docs/agent-runs/` is NEVER cleaned — that is the audit
+  trail. (`REVIEW-PENDING.md` is never Tier B — see Tier C: per DISPATCH.md §0 an acknowledged
+  marker no longer exists, so any marker you find is unreviewed, and it is gitignored — deleting
+  it is not git-recoverable.)
 
 **Tier C — parks for the human (never auto-removed):**
 - Anything that might be **data or a real backup**: `*.bak` (a SQL Server database backup wears
@@ -54,6 +56,12 @@ parks.** A wrongly deleted file costs more than ten kept junk files.
   untracked is exactly where they belong. Cleaning them would destroy the machine's config.
 - `~/.claude/.set-me-backup/`: keep the newest 3 stamps, park the rest for OK (they are the
   toolkit's own undo).
+- **`REVIEW-PENDING.md` — always parks.** Its existence means the run is unreviewed
+  (DISPATCH.md §0). Ask: "have you reviewed run <id>? Say 'reviewed <run-id>' or delete the
+  marker yourself." Never delete it on your own judgment.
+- **Versioned deploy keep-back folders** (`releases\v*`, `previous*`) that a `RUNBOOK.md` names
+  as the rollback path: park, never treat as Tier-A publish output — they are publish output by
+  origin, but they are the only rollback artifact a live failure will have.
 
 **Hard rules:** nothing is ever hard-deleted that isn't Tier A; no `git clean -fdx` sweeps (it
 cannot tell work from junk); no history rewrites; a running site's folders are left alone
@@ -65,7 +73,8 @@ cannot tell work from junk); no history rewrites; a running site's folders are l
    envelope basics (§0): this is usually a Small run — in-thread checklist, no PLAN.md.
 2. **Inventory before touching.** `git status` (untracked list read by content, not name),
    `git branch --merged main`, `git worktree list`, a size-ranked sweep for Tier-A patterns, and
-   the stale-state check (is every LOOP-STATE row terminal? is REVIEW-PENDING acknowledged?).
+   the stale-state check (is every LOOP-STATE row terminal? does `REVIEW-PENDING.md` exist? →
+   if it exists, it is Tier C — an acknowledged marker would already be gone).
 3. **Classify every candidate into A / B / C.** The classification IS the safety decision —
    when unsure between tiers, the item moves down to C.
 4. **Execute A and B.** Remove Tier A directly. Tier B through git (`git rm` staged, `branch -d`,
@@ -103,6 +112,10 @@ that can't answer all three doesn't get removed.
 
 ## Required output contract
 
+> These sections are the technical record — they go under the **Details** heading of a
+> `tell-me`-shaped report (colour marker + outcome first line, the reader's one action asked as a
+> direct question).
+
 ### 1. Cleaned
 What was removed, by tier, with sizes — and the ledger updated (say where).
 
@@ -116,6 +129,8 @@ run-record audit trail, active state files) — so restraint is visible, not acc
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, contract sections under
+      Details.
 - [ ] Inventory happened before any removal; untracked candidates were read, not judged by name.
 - [ ] Everything removed was Tier A (regenerable, proven) or Tier B (git-recoverable, SHA logged).
 - [ ] Nothing parked in Tier C was touched; every park has its question stated.

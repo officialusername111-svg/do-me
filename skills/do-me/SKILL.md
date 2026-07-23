@@ -235,6 +235,8 @@ wrong for the user.
 
 ## Definition of done — self-check before responding
 
+- [ ] Report shaped per `tell-me`: colour marker + outcome on line one, technical record under
+      Details.
 - [ ] **Domain classified** (frontend / backend / both) from where the change actually lands, and the
       routing reflects it.
 - [ ] **Tier gauged**, and the *lightest* path that does the job was chosen — no cycle convened for a
