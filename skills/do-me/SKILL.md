@@ -233,7 +233,9 @@ wrong for the user.
   `auto/<run-id>` branch merged `--no-ff` and writes the committed run record. (Trivial lane, §0:
   direct to main with the `Autonomous-Run:` trailer, INDEX line only, no marker on `done-green`.) Protected-path or
   test-integrity failures **park for review** instead of committing. `git push` is never automatic
-  (ASK). In `manual` mode, stage and hand off. Never widen this without the human asking.
+  in a run — commit-me records it as `parked: push awaiting your OK`; interactively commit-me
+  initiates the push and the ASK prompt confirms it. In `manual` mode, stage and hand off. Never
+  widen this without the human asking.
 
 ## Definition of done — self-check before responding
 

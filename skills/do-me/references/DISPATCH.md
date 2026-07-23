@@ -309,7 +309,10 @@ prototypes/artifacts externally — put screenshots of the *real* built UI in th
 ### Hard gates that survive (closed list — everything not here runs autonomously)
 
 1. **Live/production environment touches** — explicit per-conversation approval (ship-me).
-2. **`git push`, tags, releases** — ASK tier; publishing is the human's call.
+2. **`git push`, tags, releases** — ASK tier; publishing is the human's call. commit-me
+   *initiates* the push by default at the end of its interactive cycle (fetch-first,
+   merge-never-rebase, conflicts parked) — the ASK prompt is the human's confirmation; in
+   autonomous runs the push parks into the packet as `parked: push awaiting your OK`.
 3. **Secrets** — staging `.env` / credentialed config is hard-blocked by the guard hook.
 4. **DB application & schema destruction** — `sqlcmd`, `dotnet ef database update/drop`, and
    `dotnet publish` are ASK tier (the local Express instance is treated as production data).

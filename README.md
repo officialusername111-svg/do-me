@@ -33,7 +33,7 @@ Manual alternative: copy `skills/`, `agents/`, `commands/`, `hooks/` into `~/.cl
 | `/fix-me` | Defects, diagnosis-first: reproduce → root cause → minimal fix → proof |
 | `/test-me` | Verification only — never patches implementation |
 | `/secure-me` | Defensive security audit and hardening, stack-tuned |
-| `/commit-me` | VCS hygiene — screens secrets, groups logical commits, direct-to-main convention |
+| `/commit-me` | VCS hygiene — screens secrets, groups logical commits, direct-to-main convention; pushes to the remote with change/conflict feedback (prompt-confirmed) |
 | `/ship-me` | Releases and deploys — runbooks, migration discipline, per-conversation approval for live targets |
 | `/document-me` | Docs derived from actual code — README, end-user guides, release notes, glossary |
 | `/loop-me` | Batch queue orchestrator — 3 attempts per item, unresolved-and-continue, LOOP-STATE.md handoff |

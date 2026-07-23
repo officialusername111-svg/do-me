@@ -25,7 +25,9 @@ human checkpoints for that one run. `ship-me`'s live-environment gates are never
 - `/fix-me` — defects, diagnosis-first (bugs/errors/regressions start here)
 - `/test-me` — verification only; never patches implementation
 - `/secure-me` — defensive security audit and hardening
-- `/commit-me` — VCS hygiene; commits directly to main where that is the repo's convention
+- `/commit-me` — VCS hygiene; commits directly to main where that is the repo's convention, then
+  pushes to the GitHub remote with change/conflict feedback (fetch-first, merge-never-rebase; the
+  push permission prompt is my confirmation; autonomous runs park the push)
 - `/ship-me` — releases and deploys (publish, migration runbooks, env config); live environments
   require explicit per-conversation approval
 - `/document-me` — docs derived from actual code: README, end-user guides, release notes, glossary
