@@ -34,21 +34,16 @@ notes**, and a shared **GLOSSARY.md** for domain terms used consistently across 
 
 ## Autonomous by default (fire-and-forget)
 
-Unless the user passes `manual`, document-me runs **fire-and-forget**: it scopes, reads the code,
-outlines, drafts, verifies, and (on GREEN — here "verified against code") commits **without prompting
-again**, ending with one **review packet**. Per the Autonomy Contract
-(`do-me/references/DISPATCH.md` §0, canonical):
+Unless the user passes `manual`, document-me runs **fire-and-forget** under the Autonomy Contract
+(`do-me/references/DISPATCH.md` §0 — canonical: run envelope, parking, the bounded findings wave,
+and hard gates apply as written; document-me still never fixes code itself). The skill-specific
+deltas:
 
-- The Medium/Large **"human approves the outline before drafting"** gate becomes a **plan-critic**
-  review of the outline (advisory) in autonomous mode; drafting proceeds. In `manual` mode the human
-  approves the outline as before.
-- Docs are not code, so there is no test harness to gate on — GREEN here means every claim was
-  verified against the current build. On that basis the run auto-invokes `commit-me`; `manual` mode
-  stages and hands off.
-- Findings that code-reading uncovers feed the run's bounded findings wave / park as proposals in the
-  review packet, rather than waiting on a per-finding user prompt (document-me still never fixes code
-  itself).
-- The §0 hard gates still bind.
+- The Medium/Large **outline approval** becomes a **plan-critic review** of the outline
+  (advisory); drafting proceeds. `manual` restores the human outline gate.
+- Docs qualify for **§0 GREEN's non-code lane**: the verified-against-code pass is the lane's
+  owning-skill verification, so a docs-only diff auto-invokes `commit-me` under that lane —
+  GREEN is never locally redefined here. `manual` stages and hands off.
 
 ## Name the reader — every artifact has exactly one audience
 

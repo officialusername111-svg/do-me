@@ -197,8 +197,9 @@ wrong for the user.
   is a fully successful hunt** — finding nothing to report is a valid, good outcome, never a reason
   to invent findings.
 - **Wave-1 discipline — one bounded wave, defects only, refuted first (DISPATCH §0).** On Medium+
-  runs, each hunter finding first passes an adversarial **refuter** (a plan-critic briefed to kill
-  it) — a finding that dies under refutation is recorded as refuted, never developed. Survivors
+  runs, the hunter's findings pass **one adversarial refuter dispatch** (a plan-critic that
+  receives the full list and returns a kill-verdict per finding) — a finding that dies under
+  refutation is recorded as refuted, never developed. Survivors
   auto-develop in this same run **only** if they are reproducible **defects** (they violate
   criteria a human already set), tier Trivial/Small, **and** sit on a surface the original intake
   already touched — route those to `fix-me`. **Everything else parks as a proposal in the review packet**,
@@ -229,7 +230,8 @@ wrong for the user.
   the run record; worktree subagents return report shapes and never touch state files. Gitignore the
   state files. Serialize worktree merge-backs `--ff-only` with a build check between them.
 - **VCS in autonomous mode:** a GREEN run (§0) auto-invokes `commit-me`, which lands the run on an
-  `auto/<run-id>` branch merged `--no-ff` and writes the committed run record. Protected-path or
+  `auto/<run-id>` branch merged `--no-ff` and writes the committed run record. (Trivial lane, §0:
+  direct to main with the `Autonomous-Run:` trailer, INDEX line only, no marker on `done-green`.) Protected-path or
   test-integrity failures **park for review** instead of committing. `git push` is never automatic
   (ASK). In `manual` mode, stage and hand off. Never widen this without the human asking.
 
@@ -251,8 +253,9 @@ wrong for the user.
 - [ ] Logic hunt dispatched at close-out on every run that changed behavior; wave-1 developed only
       in-scope Trivial/Small defects, everything else parked as a proposal — every finding accounted
       for in the review packet, none silently dropped.
-- [ ] The run ends with the review packet and a `REVIEW-PENDING` marker (autonomous mode); no new
-      autonomous run was started over an unacknowledged marker.
+- [ ] The run ends with the review packet and a `REVIEW-PENDING` marker (autonomous mode; Trivial
+      lane ending `done-green`: packet only, no marker — §0); no new autonomous run was started
+      over an unacknowledged marker.
 - [ ] The result is reported back as one coherent outcome, not two disconnected halves.
 
 ## Scope guard

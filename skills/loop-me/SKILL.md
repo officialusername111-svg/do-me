@@ -164,8 +164,11 @@ gaps nobody scoped — interaction asymmetries, incomplete state machines, impli
 consequences, cross-task incoherence (the gap only a *batch* can create) — and returns ranked,
 evidence-backed improvement findings shaped as routable concerns.
 
-- **Every loop-me run gets a hunt** — even a trivial two-item batch, scoped to what those items
-  touched. The hunt is one dispatch, not a cycle; it doesn't change the batch's tier.
+- **Every loop-me run gets a hunt** — scoped to what the batch touched. Right-sized per §0
+  fuse-roles: a batch whose items were **all Trivial/Small** gets an **inline hunt** by the
+  orchestrator (apply the hunter's gap taxonomy directly — zero dispatches); the dispatched
+  logical-hunter is reserved for **Medium+ batches**. Either way the hunt is one pass, not a
+  cycle; it doesn't change the batch's tier.
 - **The hunt never reopens the accounting.** The queue's arithmetic is already settled; findings
   are *new* work, not retroactive failures against finished tasks.
 - **One bounded wave — defects only auto-develop, refuted first (DISPATCH §0).** Each finding first
@@ -300,11 +303,11 @@ render it as an `artifact-design` page. If the hunt found nothing, say so in-thr
 - [ ] Queue accounting balances: every task that entered appears as `passed`, `unresolved`,
       `dropped`, or `blocked`.
 - [ ] Batch report has all five sections; the unresolved section follows the required shape.
-- [ ] Logic hunt dispatched after the queue went terminal — every run, every tier; every finding
-      accounted for: refuted, parked as a proposal, or (only surviving in-scope Trivial/Small
-      defects) executed through the follow-up queue to a terminal state; the follow-up queue got
-      no second hunt; none silently dropped — or "hunt found nothing" stated. (`manual` mode may
-      also publish the findings artifact.)
+- [ ] Logic hunt performed after the queue went terminal — every run (dispatched only for Medium+
+      batches, inline below); every finding accounted for: refuted, parked as a proposal, or (only
+      surviving in-scope Trivial/Small defects) executed through the follow-up queue to a terminal
+      state; the follow-up queue got no second hunt; none silently dropped — or "hunt found
+      nothing" stated. (`manual` mode may also publish the findings artifact.)
 
 ## Pairs well with
 
@@ -317,10 +320,11 @@ render it as an `artifact-design` page. If the hunt found nothing, say so in-thr
 - `test-me` — the fallback and integration gate: dispatched when a routed skill returned no
   executed-test evidence, or when criteria span multiple routed skills; the routed skill's own
   tester report is the default Pass? evidence.
-- `logical-hunter` (agent) — the post-queue logic hunt: sweeps the batch's blast radius for
-  unscoped logical gaps; its surviving in-scope Trivial/Small defects become the follow-up queue,
-  everything else parks as a proposal in the review packet (artifact only in `manual` mode); one
-  of the two agents this skill dispatches directly, beside the plan-critic (per DISPATCH.md).
+- `logical-hunter` (agent) — the post-queue logic hunt on Medium+ batches (all-Trivial/Small
+  batches hunt inline): sweeps the batch's blast radius for unscoped logical gaps; its surviving
+  in-scope Trivial/Small defects become the follow-up queue, everything else parks as a proposal
+  in the review packet (artifact only in `manual` mode); one of the two agents this skill
+  dispatches directly, beside the plan-critic (per DISPATCH.md).
 - `commit-me` — the explicit close-out for a finished batch; loop-me stages, commit-me commits.
 - `superpowers:subagent-driven-development` (if installed) — run each attempt in a fresh subagent
   with `LOOP-STATE.md` as the handoff artifact, so no attempt inherits a stale mental model.

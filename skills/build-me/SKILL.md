@@ -144,7 +144,10 @@ re-explores what you already read.
 
 ## Before you write code: confirm the stack
 
-Detect or ask for the target so the output actually drops into the project:
+If the invocation carries a **RUN-BRIEF** (a do-me/loop-me routed run), adopt it as the intake
+read — use its stack, conventions, and verify lines, read only this item's surface files, and
+don't re-derive what the brief states. Otherwise, detect the target so the output actually drops
+into the project:
 
 1. **Framework / runtime** — ASP.NET Core MVC + EF Core / Dapper / raw ADO, the project's .NET version,
    service and controller conventions. Infer from `*.csproj`, existing controllers/services, and

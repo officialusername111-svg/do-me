@@ -64,11 +64,14 @@ reviewers with different assignments catch what any one of them misses. The pane
     3-lens panel at the plan gate (and at the diff, if the work is already built).
   - **Medium tier** → single plan-critic (as before).
   - **Trivial / Small** → no reviewer; the mechanical gates alone carry it.
-- **Findings get a refutation pass before they become work.** On Medium+ runs, each finding from
-  the logical-hunter, secure-me's audit, or a failed verification is handed to one adversarial
-  refuter (a `plan-critic` briefed "try to kill this finding") before it may enter wave-1
-  development or a queue. A finding that dies under refutation is recorded as refuted, not built.
-  This is what keeps auto-developed findings from being plausible-but-wrong.
+- **Findings get a refutation pass before they become work.** On Medium+ runs, the findings from
+  the logical-hunter, secure-me's audit, or a failed verification are handed to **one adversarial
+  refuter dispatch** (a `plan-critic` briefed "try to kill each of these") that receives the FULL
+  findings list and returns an independent kill-verdict per finding — blindness is a
+  between-panelists value, never a between-findings one, so batching loses no rigor while
+  per-finding dispatches pay the cold-start tax N times. A finding that dies under refutation is
+  recorded as refuted, not built. This is what keeps auto-developed findings from being
+  plausible-but-wrong.
 - **Panels are advisory, like the single critic** — recorded as "automated panel review
   (advisory), lenses: …" and never as independent human oversight. Every panel dispatch counts
   against the run budget.
@@ -145,7 +148,9 @@ touches, one line each on what they are), the frozen contract, the acceptance cr
 **verify line** — build command, test-runner command, test project paths, and the intake
 test-surface snapshot counts (the same snapshot GREEN 2 already takes; testers re-derive these on
 every dispatch unless the brief carries them). The brief **links** files, never pastes them. Every
-dispatch packet **embeds or points at the brief**, and briefed agents follow the reading rule:
+dispatch packet **embeds or points at the brief** — and a *skill* invoked with a RUN-BRIEF
+likewise adopts it as its own intake read (no re-detection of stack or conventions). Briefed
+agents follow the reading rule:
 **read the brief's files first; explore beyond them only when a named symbol isn't where the brief
 says** — never a whole-repo sweep to re-derive what the brief already states. Exception: the
 plan-critic's information asymmetry stands — it gets the brief's *facts* (stack, file list), never
@@ -221,12 +226,29 @@ where 5 would do has a finding-worthy efficiency defect even though it's "within
    dispatches.)
 4. No secret-bearing file is staged (enforced by the guard hook, below).
 
+**Non-code lane:** a diff touching **only** documentation, `CLEAN-HISTORY.md`, and
+gitignored/state files — no source, config, or migration file — satisfies condition 1 through the
+**owning skill's own verification** instead of a test run (document-me's claim-by-claim
+verified-against-code pass; clean-me's Tier-A/B proof with nothing Tier-C touched), and condition
+2's snapshot may be the in-thread scope note on Trivial/Small runs. Conditions 3 and 4 apply
+unchanged. (Distinct from the run-record carve-out under "Run identity", which exempts only the
+`docs/agent-runs/` files — this lane covers a run whose entire product is non-code.)
+
 ### Run identity, decision trail, and revert
 
 - Every autonomous run has a **run ID**. Record the **pre-run HEAD SHA** in PLAN.md and the report.
 - Run commits land on a local `auto/<run-id>` branch, merged to main `--no-ff` at run end after the
   final green — one merge commit, so rollback is `git revert -m 1 <merge-sha>`. Every commit also
   carries an `Autonomous-Run: <run-id>` trailer (`git log --grep` lists a run's commits).
+- **Trivial lane (right-sized ceremony):** a Trivial run — zero dispatches, no protected-path or
+  statutory/money/PII touch — commits **directly to main**, no `auto/` branch or merge commit; the
+  `Autonomous-Run: <run-id>` trailer is the revert handle (`git log --grep` finds it,
+  `git revert <sha>` undoes it). Decision trail = the commit body plus the in-thread packet — no
+  per-run `docs/agent-runs/<id>.md` file, but the one-line `INDEX.md` entry is still appended. A
+  Trivial run ending `done-green` writes **no REVIEW-PENDING marker**: the synchronously delivered
+  in-thread packet is the touchpoint. Any other terminal state still writes the marker, and
+  **Small and up keep the full ceremony** — a protected-path touch forces the full lane regardless
+  of tier.
 - The **decision trail is durable and write-ahead**: an append-only `docs/agent-runs/<run-id>.md`
   records the plan snapshot, every decision/assumption **before** the tool calls it authorizes, the
   test-evidence summary, and the SHAs produced. It is committed **in the same run** as the code.
@@ -272,7 +294,7 @@ any protected-path demotions, links to the run record. **The packet — and ever
 report or reply — is written in plain language per the `tell-me` skill** (load it before writing):
 outcome first, everyday words, the reader's one question asked directly, exact technical detail
 kept precise under a final "Details" section. A **`REVIEW-PENDING.md`** marker is written **at the
-repo root** (gitignored — the first run in a repo appends it and the state-file names to
+repo root** (exception: a Trivial-lane run ending `done-green` writes none — § Run identity) (gitignored — the first run in a repo appends it and the state-file names to
 `.gitignore`), containing the run ID, date, terminal state, and the exact revert command.
 **Acknowledgment is mechanical, and only the human can give it:** the human deletes the marker
 themselves, or explicitly says "reviewed <run-id>" — only then may Claude delete it, never on
@@ -318,13 +340,13 @@ user → do-me (routes) → skill (process, gates, user contact) → agent (craf
 | design-me / redesign-me | ux-ui-designer · frontend-developer · frontend-tester · reference-enforcer (only when a reference image is attached) · everyday-user (persona walk at verify: Medium+ UI work or any new screen) | scoped task, approved direction or design spec, UI-only boundary, relevant states (loading/empty/error); for the enforcer: reference image path(s), user strictness note, built surface + how to run the app, viewport hint, prior discrepancy list on cycle 2+; for everyday-user: the screen(s) + primary task + how to reach the app + seeded test data | standard report; enforcer returns PASS/FAIL/BLOCKED + ranked discrepancy list (RE-ids) + screenshot evidence; everyday-user returns the walk report (EU-ids: transcript, confusion findings ranked by task damage) |
 | fix-me | backend-developer *or* frontend-developer (the repair) · matching tester (blast-radius regression) · plan-critic (refuter over a Medium/Large diagnosis before hand-off) | the completed diagnosis: root-cause sentence, evidence, failure findings, affected path | standard report |
 | test-me | backend-tester · frontend-tester · everyday-user (persona walk, UI lane, Medium+ or on request) | what changed (or named target), acceptance criteria, test strategy per layer; for everyday-user: screen(s) + primary task + app access + test data | pass/fail matrix + findings, evidence attached; everyday-user returns the walk report (EU-ids) |
-| secure-me | security-tester (code-level pass) · security-skeptic (architecture pass on Medium/Large: trust-assumption ledger) · plan-critic (refuter per finding on Medium/Large; panel on the remediation plan when sweeping) | scope (diff / surface / whole app), tier, prior findings to re-test; for the skeptic: the surface + prior findings to build on, not repeat | findings table: `# · Finding · OWASP/area · Blocker/High/Med/Low · Evidence (file:line) · Fix`; skeptic returns the SS-id trust-assumption ledger (holds/breaks + cheapest attack + fix direction) |
+| secure-me | security-tester (code-level pass) · security-skeptic (architecture pass on Medium/Large: trust-assumption ledger) · plan-critic (one refuter dispatch over the findings list on Medium/Large; panel on the remediation plan when sweeping) | scope (diff / surface / whole app), tier, prior findings to re-test; for the skeptic: the surface + prior findings to build on, not repeat | findings table: `# · Finding · OWASP/area · Blocker/High/Med/Low · Evidence (file:line) · Fix`; skeptic returns the SS-id trust-assumption ledger (holds/breaks + cheapest attack + fix direction) |
 | ship-me | devops-release-engineer (deploy mechanics) · database-architect (migration/schema-change *design* consult) · technical-writer (release-notes drafting, in-release) · plan-critic (3-lens panel over the runbook BEFORE it is presented to the human) | release scope, target env, the runbook step being executed; for notes: version + what shipped | step output with real command results; drafted notes for ship-me to review/own |
 | document-me | technical-writer | human-approved outline (Medium/Large), audience per artifact, the code surfaces to verify against | the artifacts + verification notes |
 | commit-me | — (no bench; works the tree directly) | — | — |
 | clean-me | — (no bench; works the tree directly; Tier-C parks go to the human, staged removals hand off to commit-me) | — | — |
-| do-me | plan-critic (solo Medium; 3-lens panel Large/protected; refuter per hunt finding) · logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement findings as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached; disposition per §0's bounded wave — surviving in-scope Trivial/Small defects develop via fix-me, everything else parks as a proposal in the review packet; artifact only in `manual` mode |
-| loop-me | plan-critic (queue-plan review: solo Medium, panel Large; refuter per hunt finding) · logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); only surviving in-scope Trivial/Small defects enter the follow-up queue (normal loop semantics, no second hunt), everything else parks as a proposal in the review packet; artifact only in `manual` mode |
+| do-me | plan-critic (solo Medium; 3-lens panel Large/protected; one refuter dispatch over the hunt findings list) · logical-hunter (post-run logic hunt only; all domain work still routes to skills) | run scope: the delivered concern(s), surfaces touched, acceptance criteria / spec pointers, how to run the app | hunt report: ranked improvement findings as routable concerns (route + tier suggested) + defects flagged for fix-me, evidence attached; disposition per §0's bounded wave — surviving in-scope Trivial/Small defects develop via fix-me, everything else parks as a proposal in the review packet; artifact only in `manual` mode |
+| loop-me | plan-critic (queue-plan review: solo Medium, panel Large; one refuter dispatch over the hunt findings list) · logical-hunter (post-queue logic hunt only; queue slots still go to *skills*, never to agents) | batch scope: the terminal LOOP-STATE queue with concern statements, surfaces touched, criteria / spec pointers, how to run the app | hunt report (same shape); only surviving in-scope Trivial/Small defects enter the follow-up queue (normal loop semantics, no second hunt), everything else parks as a proposal in the review packet; artifact only in `manual` mode |
 
 **Model policy** (recorded here so drift is a registry violation): judgment-critical reviewer
 roles run on the **same class of model as the builders they review** — `plan-critic` and

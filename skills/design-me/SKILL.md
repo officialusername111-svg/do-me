@@ -41,25 +41,19 @@ and proceed** with the reading the words best support (log the assumption) — d
 
 ## Autonomous by default (fire-and-forget)
 
-Unless the user passes `manual`, design-me runs **fire-and-forget**: it picks the mode, designs,
-builds, self-checks, and (on GREEN) commits **without prompting the user again**, ending with one
-**review packet**. The canonical policy is the Autonomy Contract in `do-me/references/DISPATCH.md`
-§0 — it overrides any older gate/question wording below. In brief:
+Unless the user passes `manual`, design-me runs **fire-and-forget** under the Autonomy Contract
+(`do-me/references/DISPATCH.md` §0 — canonical: its run envelope, GREEN gate, parking,
+blocked-on-fact typing, and hard gates apply as written, and it overrides any older gate/question
+wording below). The skill-specific deltas:
 
-- **Ask the user nothing mid-run.** Every "ask which they want / ask only if ambiguous" below becomes
-  **infer → take the safest reversible reading → log the assumption**. The rare exception is an
-  external fact on a money/statutory/personal-data surface (e.g. a Razor view computing a fee) — that
-  parks as `blocked-on-fact`, it is never guessed.
-- **Prototype-for-approval is `manual`-only.** In autonomous mode there is no one waiting to approve a
-  mock, and publishing internal LGU UI externally is needless data egress — so **skip the external
+- Every "ask which they want / ask only if ambiguous" below becomes **infer → safest reversible
+  reading → log the assumption** (§0); `manual` restores the old checkpoints and prototype flow.
+- **Prototype-for-approval is `manual`-only.** In autonomous mode nobody is waiting to approve a
+  mock, and publishing internal LGU UI externally is needless data egress — **skip the external
   prototype**, build the real UI, and put **screenshots of it in the review packet**. The redesign
   prototype sign-off flow below applies only in `manual` mode.
-- The **reference-enforcer** visual-fidelity gate stays (it's a real gate), but on its 3-cycle cap it
-  becomes **unresolved-and-continue**: mark blocked, log to the packet, continue — don't wait on the
-  human.
-- A protected-path change (a view computing rates/penalties/rounding) is staged but **parked for
-  review**, not committed and not blocked on a prompt.
-- The §0 hard gates still stop. `manual` restores the old per-gate checkpoints and prototype flow.
+- The **reference-enforcer** visual-fidelity gate stays a real gate; its cycle-cap mechanics live
+  in exactly one place — the enforcer entry under "Dispatching the bench".
 
 Your UX/UI competency matrix — the areas you build and audit against (UX & interaction design, visual
 hierarchy, component architecture, HTML semantics, CSS & layout, responsive design, accessibility,
@@ -136,7 +130,10 @@ Right-sizing cuts both ways.
 
 ## Before you write code: confirm the stack
 
-Detect or ask for the target so the output is actually droppable:
+If the invocation carries a **RUN-BRIEF** (a do-me/loop-me routed run), adopt it as the intake
+read — use its stack, conventions, and verify lines, read only this item's surface files, and
+don't re-derive what the brief states. Otherwise, detect the target so the output is actually
+droppable:
 
 1. **Framework / language** — React (TS/JS), Vue, Svelte, Angular, Web Components, or plain
    HTML+CSS+JS. If a project is present, infer from its files (`package.json`, existing components,
@@ -400,7 +397,7 @@ rendered twice. Surprises are bugs.
 - [ ] Public API is small, typed, with sensible defaults and escape hatches (`className`, `ref`, rest).
 - [ ] Code is complete and copy-pasteable — no placeholders in core logic.
 - [ ] **Right-sized**: no library/abstraction/pattern heavier than the scope justifies; any heavy choice has a one-line reason.
-- [ ] Reference image attached? → reference-enforcer **PASS** obtained (or 3-cycle cap → `unresolved`, logged to the review packet with evidence and the run continued) — similarity never self-certified.
+- [ ] Reference image attached? → reference-enforcer gate satisfied per "Dispatching the bench" (PASS, or its cycle cap ran its course into the packet) — similarity never self-certified.
 
 **Audit mode** — before presenting:
 
@@ -415,7 +412,7 @@ rendered twice. Surprises are bugs.
 - [ ] Inventoried the current UI first; **nothing was lost** — every content block and function survives in the new arrangement (old→new map proves it).
 - [ ] Proposed genuinely distinct arrangement directions (not restyles), right-sized to scope, and recommended one with a reason.
 - [ ] New arrangement keeps states, responsive behavior, and accessibility intact, and reuses existing tokens/components.
-- [ ] Reference image attached? → reference-enforcer **PASS** obtained (or 3-cycle cap → `unresolved`, logged to the review packet with evidence and the run continued) — similarity never self-certified.
+- [ ] Reference image attached? → reference-enforcer gate satisfied per "Dispatching the bench" (PASS, or its cycle cap ran its course into the packet) — similarity never self-certified.
 
 If any box can't be checked, either fix it or explicitly flag it as a known limitation with a reason.
 

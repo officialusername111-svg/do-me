@@ -83,8 +83,10 @@ cannot tell work from junk); no history rewrites; a running site's folders are l
    with a header if absent — format below). The ledger is the product: what went, why it was
    provable, how to get it back, what was parked.
 6. **Report** per the output contract; parked items are the "What you need to do" list. Committing
-   the staged removals and the ledger hands off to `commit-me` (in an autonomous run, the normal
-   GREEN gate applies — cleanup counts as tree changes like any other).
+   the staged removals and the ledger hands off to `commit-me`. In an autonomous run the GREEN gate
+   applies via **§0's non-code lane** when the diff touches only `CLEAN-HISTORY.md` and state
+   files (the Tier-A/B proof is the owning-skill verification); a Tier-B removal of a **tracked
+   code file** is a code diff and falls under the full gate (build + tests) like any other change.
 
 ## CLEAN-HISTORY.md — the logbook format
 

@@ -46,12 +46,16 @@ quality gate; treat a failure as "park for human review," never "commit anyway")
 1. **Executed tests, not just present.** Build passes and the tests covering the changed behavior
    were actually run and passed. If the repo has **no test harness**, you do **not** auto-commit —
    stage, write the review packet, and stop with a `parked: no test evidence` note. Compilation
-   alone is never GREEN.
+   alone is never GREEN. **Exception — the §0 non-code lane:** a diff touching only docs,
+   `CLEAN-HISTORY.md`, and state files satisfies this condition via the owning skill's own
+   verification (DISPATCH §0 GREEN, "Non-code lane").
 2. **Test-integrity clean.** Compare the test surface to the intake snapshot recorded in PLAN.md
    (test files, executed-test count, assertion count). If any pre-existing test was **deleted,
    skipped (`[Fact(Skip)]`/`[Ignore]`), or weakened**, do not commit — park the whole run for human
    review and name the offending test in the packet. (Developer agents are barred from touching
-   existing tests during a run — DISPATCH Rules §2 — so this firing means the run gamed its signal.)
+   existing tests during a run — DISPATCH Rules §2 — so this firing means the run gamed its signal.
+   On a §0 non-code-lane run the snapshot may be the in-thread scope note — Trivial/Small runs have
+   no PLAN.md.)
 3. **Protected paths park, not commit.** Any changed file implementing rates / penalties / interest
    / surcharges / rounding / exemptions, or a migration touching assessment / collection / billing
    tables (per the repo's `autonomy.protectedPaths` globs, else the keyword set), is **staged but
@@ -70,6 +74,10 @@ quality gate; treat a failure as "park for human review," never "commit anyway")
   commit — rollback is `git revert -m 1 <merge-sha>`. Record the merge SHA and that revert command
   in the review packet.
 - **Never `git push`** (ASK tier) and never touch a live environment — those stay human even here.
+- **Trivial lane (§0 Run identity):** a Trivial run — zero dispatches, no protected-path touch —
+  skips the branch entirely: commit **directly to main** with the `Autonomous-Run:` trailer as the
+  revert handle; append the `docs/agent-runs/INDEX.md` line but no per-run record file; and on
+  `done-green` write **no** REVIEW-PENDING marker — the in-thread packet is the touchpoint.
 
 **The review packet** (your output contract in autonomous mode, in addition to the three sections
 below): the commit list with the merge SHA and one-line `git revert -m 1 <sha>` rollback; the

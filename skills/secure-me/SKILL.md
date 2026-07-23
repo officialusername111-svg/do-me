@@ -26,29 +26,21 @@ system you don't own.
 
 ## Autonomous by default (fire-and-forget)
 
-Unless the user passes `manual`, secure-me runs **fire-and-forget**: it scopes, gathers evidence,
-ranks, remediates, and (on GREEN) commits **without prompting again**, ending with one **review
-packet**. Per the Autonomy Contract (`do-me/references/DISPATCH.md` §0, canonical):
+Unless the user passes `manual`, secure-me runs **fire-and-forget** under the Autonomy Contract
+(`do-me/references/DISPATCH.md` §0 — canonical: run envelope, GREEN gate, parking, the batched
+finding-refuter pass, and hard gates apply as written; the defensive/authorization boundary is
+never crossed). The skill-specific deltas:
 
-- **Straightforward hardening fixes apply in-run** — a `[ValidateAntiForgeryToken]`, a parameterized
-  query, a cookie flag, an added `[Authorize]`: make the fix, verify, include it in the packet.
-- **Sweeping structural changes park for human review, they do not auto-commit.** Auth-model rework,
-  a connection-string migration, or a major dependency bump lands on a **protected path** or an
-  ASK-tier operation (DB apply, publish) — so under §0 it is **staged and parked for review in the
-  packet**, never committed autonomously. This is the old "human approval before sweeping changes"
-  gate, kept — but it parks the change instead of blocking the run on a prompt, and the rest of the
-  pass proceeds. (On LGU systems this conservatism is deliberate: statutory/auth correctness outranks
-  speed.) In `manual` mode the sweeping change stops for explicit human approval as before.
-- **Findings face a refuter before they're reported or fixed** (Medium/Large): each candidate
-  finding is handed to a plan-critic briefed to kill it — wrong scenario, already mitigated,
-  inflated severity, out of scope. Refuted findings appear one line each under the table as
-  "refuted", keeping the report honest without burying real Blockers under theater.
-- The **plan-critic** reviews the remediation plan on Medium/Large passes (advisory) in place of the
-  human sign-off — escalating to the **3-lens blind panel** when the remediation is sweeping
-  (auth-model rework, connection-string migration; §0 "Independent review panels"); its
-  `blocked-on-fact` parks are honored.
-- The §0 hard gates (authorization scope, no offensive tooling, secrets, DB apply, push) still bind —
-  autonomy never crosses the defensive boundary or the authorization limit.
+- **Straightforward hardening fixes apply in-run** — a `[ValidateAntiForgeryToken]`, a
+  parameterized query, a cookie flag, an added `[Authorize]`: fix, verify, include in the packet.
+- **Sweeping structural changes park, never auto-commit** — auth-model rework, connection-string
+  migration, major dependency bumps land on protected paths or ASK-tier operations, so they are
+  staged and parked while the rest of the pass proceeds; deliberate LGU conservatism. `manual`
+  stops them for explicit approval as before.
+- **Refuted findings still appear** — one line each under the table as "refuted", keeping the
+  report honest without burying real Blockers under theater.
+- The **plan-critic** reviews the Medium/Large remediation plan (advisory), escalating to the
+  **3-lens panel** when the remediation is sweeping.
 
 ## Right-size first — an audit is a lens, not a dragnet
 
